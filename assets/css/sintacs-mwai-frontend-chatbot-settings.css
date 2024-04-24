@@ -1,0 +1,29 @@
+.form-select, .form-check, .form-check input {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #ced4da;
+}
+
+.form-check {
+    padding-left: 50px !important;
+}
+
+#ai-engine-extension-form-wrapper {
+    overflow: hidden;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f2f2f2;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    margin-top: 10px;
+}
+
+#ai-engine-extension-form {
+    z-index: 1000;
+}
+
+.chatbot-info {
+    font-size: medium;
+}

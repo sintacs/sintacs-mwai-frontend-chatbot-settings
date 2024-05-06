@@ -16,13 +16,13 @@ Dirk Krölls, Sintacs
 
 ## New Features
 - Admin page to configure allowed roles:
-  - Navigate to the 'AI Engine Frontend' menu in your WordPress admin panel.
+  - Navigate to the 'AI Engine Frontend Chatbot Settings' menu in your WordPress admin panel.
   - Use the 'Allowed Roles' setting to specify which user roles are permitted to modify chatbot settings.
   - This setting ensures that only authorized users can make changes to the chatbot configurations.
 
 ## Usage
 - Use the shortcode `[ai_engine_extension_form]` to display the chatbot settings form on any page.
-- Only users with administrator or editor roles can change settings, depending on the configuration in the new admin settings page.
+- Only defined user roles can change settings, depending on the configuration in the new admin settings page.
 
 ## Features
 - Dynamic parameter handling based on defined chatbot settings.

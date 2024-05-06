@@ -3,30 +3,30 @@ jQuery(document).ready(function ($) {
         var checkExist = setInterval(function () {
             var $chatElement = $('.mwai-chatbot-container .mwai-chat');
             if ($chatElement.length && $chatElement.attr('id')) {
-                console.log("Chatbot-Element gefunden.");
+                console.log("Chatbot element found.");
                 clearInterval(checkExist);
 
-                // Extrahieren der Chatbot-ID aus der ID des Child-Elements
+                // Extracting the Chatbot ID from the ID of the child element
                 var chatElementId = $chatElement.attr('id');
                 chatbotId = chatElementId.replace('mwai-chatbot-', '');
                 $('#botId-info').text(chatbotId);
                 console.log("Chatbot ID:", chatbotId);
 
-                // Der Chatbot ist geladen, binden Sie hier das Formular-Submit-Event
+                // The chatbot is loaded, bind the form submit event here
                 bindFormSubmitEvent();
 
-                // Modelle basierend auf der Chatbot-ID aktualisieren
+                // Update models based on the Chatbot ID
                 updateModelsDropdown();
             } else {
-                console.log("Kein Chatbot-Element auf der Seite gefunden.");
-                // Überprüfen, ob bereits ein Versuch unternommen wurde, den Chatbot zu finden
+                console.log("No chatbot element found on the page.");
+                // Check if an attempt has already been made to find the chatbot
                 if ($('#ai-engine-extension-form').length) {
-                    // Formular ausblenden und durch einen unsichtbaren Kommentar ersetzen
+                    // Hide form and replace it with an invisible comment
                     $('#ai-engine-extension-form').replaceWith('No chatbot found on the current page.');
                     clearInterval(checkExist);
                 }
             }
-        }, 100); // Überprüfen Sie alle 100ms
+        }, 100); // Check every 100ms
     }
 
     function toggleFormElements(disabled) {
@@ -37,10 +37,10 @@ jQuery(document).ready(function ($) {
         $('#ai-engine-extension-form').submit(function (e) {
             e.preventDefault();
 
-            // Serialisieren der Formulardaten, bevor die Felder deaktiviert werden
+            // Serialize the form data before disabling the fields
             var formData = $(this).serialize();
-            console.log(formData);
-            // Deaktivieren des Senden-Buttons und Sperren der Formularfelder
+
+            // Disable the submit button and lock the form fields
             toggleFormElements(true);
 
             $.ajax({
@@ -48,14 +48,14 @@ jQuery(document).ready(function ($) {
                 url: aiEngineExtensionAjax.ajaxurl,
                 data: {
                     action: 'save_ai_engine_parameters',
-                    chatbotId: chatbotId, // Senden der Chatbot-ID mit der Anfrage
+                    chatbotId: chatbotId, // Sending the Chatbot ID with the request
                     formData: formData
                 },
                 success: function (response) {
                     // Display response message as alert if exist
                     if (response.data.message) {
                         // Add Success border to the form
-                        $('#ai-engine-extension-form-wrapper').addClass('border border-success bg bg-success');
+                        $('#ai-engine-extension-form-wrapper').addClass('border border-success');
                         $('#form-success-message').text(response.data.message);
                         $('#form-success-message').show();
                         // Reload the page to take the changed settings into effect
@@ -66,17 +66,17 @@ jQuery(document).ready(function ($) {
                     }
                 },
                 error: function (response) {
-                    // Fehlerbehandlung...
-                    alert('Ein Fehler ist aufgetreten.');
+                    // Error handling...
+                    alert('An error occurred.');
                 },
                 complete: function () {
-                    // Freigeben des Senden-Buttons und der Formularfelder unabhängig vom Erfolg oder Fehler
+                    // Release the submit button and form fields regardless of success or failure
                     toggleFormElements(false);
-                    // Erfolgshinweis nach einigen Sekunden ausblenden
+                    // Fade out success notice after a few seconds
                     setTimeout(function () {
                         $('#form-success-message').fadeOut();
                         $('#form-success-message').text('');
-                    }, 5000); // Hinweis nach 5 Sekunden ausblenden
+                    }, 5000); // Fade out notice after 5 seconds
                 }
             });
         });
@@ -85,18 +85,18 @@ jQuery(document).ready(function ($) {
     function updateModelsDropdown() {
         $.ajax({
             type: "POST",
-            url: aiEngineExtensionAjax.ajaxurl, // Stellen Sie sicher, dass dies zuvor korrekt definiert wurde
+            url: aiEngineExtensionAjax.ajaxurl,
             data: {
                 action: 'get_available_models',
-                chatbotId: chatbotId // Senden der Chatbot-ID mit der Anfrage
+                chatbotId: chatbotId // Sending the Chatbot ID with the request
             },
             success: function (response) {
                 if (response.success && response.data['models']) {
                     var models = response.data['models'];
                     var $modelSelect = $('#model');
-                    $modelSelect.empty(); // Bestehende Optionen löschen
+                    $modelSelect.empty(); // Delete existing options
 
-                    // Modelle zum Dropdown hinzufügen
+                    // Add models to the dropdown
                     models.forEach(function (model) {
                         $modelSelect.append($('<option></option>').attr('value', model.model).text(model.name));
                     });
@@ -118,11 +118,6 @@ jQuery(document).ready(function ($) {
 
                     if (currentModel && modelFound) {
                         $('#model option[value="' + currentModel + '"]').attr('selected', 'selected');
-                    } else {
-                        // No model selected -> choose model
-                        $modelSelect.prepend($('<option></option>').attr('value', '').text('Choose model').prop('selected', true));
-                        // Update select field to show selected option
-                        $modelSelect.find('option:first').prop('selected', true);
                     }
 
                     if (!modelFound) {

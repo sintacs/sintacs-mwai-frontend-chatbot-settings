@@ -12,6 +12,10 @@ defined('ABSPATH') or die('No script kiddies please!');
 class SintacsMwaiFrontendChatbotSettings
 {
     var string $plugin_name = 'Sintacs Mwai Frontend Chatbot Settings';
+
+    // Values for chatbot modes. Where are they defined in ai-engine?
+    var array $chatbot_modes = ['chat', 'assistant', 'images'];
+
     var string $chatbot_id = '';
 
     // Parameter names to save with the form in the frontend
@@ -20,7 +24,7 @@ class SintacsMwaiFrontendChatbotSettings
     // Parameter names to save with the form in the backend
     var array $parameter_names = [];
 
-    // Parameter names to skip
+    // Parameter names to skip from the form in the frontend
     var array $parameter_to_skip = [
         'icon',
         'iconText',
@@ -28,18 +32,23 @@ class SintacsMwaiFrontendChatbotSettings
         'iconPosition',
         'scope',
         'apiKey',
+        'botId'
     ];
 
     // Parameter names to show in the frontend
-    var array $parameter_to_show = ['name','envId', 'botId']; // These field(s) are missing in the init constant so we add it here manually. Use it for sorting too. ToDo: add parameter dynamically
+    // These field(s) are missing in the init constant so we add it here manually. Use it for sorting too. ToDo: add parameter dynamically
+    var array $parameter_to_show = ['name','envId', 'instructions'];
 
+    // Parameters that are not editable but should still be displayed in the form
+    var array $readonly_parameters = ['botId'];
+    
     // Define an array with the roles that should have access
     private $allowed_roles = ['administrator','editor']; // Example roles
 
     public function __construct()
     {
         add_action('plugins_loaded',array($this,'check_ai_engine_plugin_status'));
-        add_action('wp_enqueue_scripts',array($this,'enqueue_scripts'));
+        //add_action('wp_enqueue_scripts',array($this,'enqueue_scripts'));
 
         add_shortcode('ai_engine_extension_form',array($this,'form_shortcode'));
 
@@ -61,6 +70,9 @@ class SintacsMwaiFrontendChatbotSettings
 
             // Adds array parameter_to_show to parameter_names array at the beginning
             $this->parameter_names = array_merge($this->parameter_to_show,$this->parameter_names);
+
+            // Make the array unique
+            $this->parameter_names = array_unique($this->parameter_names);
         }
     }
 
@@ -98,7 +110,7 @@ class SintacsMwaiFrontendChatbotSettings
             return;
         }
         wp_enqueue_script('sintacs-mwai-frontend-chatbot-settings',plugin_dir_url(__FILE__) . 'assets/js/sintacs-mwai-frontend-chatbot-settings.js',array('jquery'),null,true);
-        wp_localize_script('sintacs-mwai-frontend-chatbot-settings','aiEngineExtensionAjax',array('ajaxurl' => admin_url('admin-ajax.php'),  'security' => wp_create_nonce('sichere_handlung')));
+        wp_localize_script('sintacs-mwai-frontend-chatbot-settings','aiEngineExtensionAjax',array('ajaxurl' => admin_url('admin-ajax.php'),  'security' => wp_create_nonce('secure_action')));
         wp_enqueue_style('sintacs-mwai-frontend-chatbot-settings-bootstrap',plugin_dir_url(__FILE__) . 'assets/css/bootstrap.css');
         wp_enqueue_style('sintacs-mwai-frontend-chatbot-settings',plugin_dir_url(__FILE__) . 'assets/css/sintacs-mwai-frontend-chatbot-settings.css');
     }
@@ -111,7 +123,10 @@ class SintacsMwaiFrontendChatbotSettings
 	    }
 
 	    // Extract formData: model=ft%3Agpt-3.5-turbo-0613%3Afmcg%3A%3A8XVP5Cst&maxTokens=1024&temperature=0.8&instructions=Converse%20as%20if%20you%20were%20an%20AI%20assistant.%20Be%20friendly%2C%20creative.%20%7BCONTENT%7D&envId=o3n4pqhr
-	    parse_str($_POST['formData'],$formDataArray);
+	    parse_str(nl2br($_POST['formData']),$formDataArray);
+
+//var_dump($formDataArray);
+
         // Überprüfen des Nonce
         //error_log('Empfangener Nonce-Wert: ' . $formDataArray['security']); // Zum Debuggen
         if (!isset($formDataArray['security']) || !wp_verify_nonce($formDataArray['security'], 'sichere_handlung')) {
@@ -122,7 +137,12 @@ class SintacsMwaiFrontendChatbotSettings
         $extractedParameters = [];
         foreach ($this->parameter_names as $parameter_name) {
             if (isset($formDataArray[$parameter_name])) {
-                $extractedParameters[$parameter_name] = sanitize_text_field($formDataArray[$parameter_name]);
+                // Check if the parameter is a textarea type
+                if ($parameter_name == 'instructions') { // Assuming 'instructions' is your textarea field
+                    $extractedParameters[$parameter_name] = sanitize_textarea_field($formDataArray[$parameter_name]);
+                } else {
+                    $extractedParameters[$parameter_name] = sanitize_text_field($formDataArray[$parameter_name]);
+                }
             } else {
                 $extractedParameters[$parameter_name] = false; // to include unchecked checkboxes
             }
@@ -169,14 +189,17 @@ class SintacsMwaiFrontendChatbotSettings
         if (!$this->is_ai_engine_pro_active()) {
             return 'AI Engine Pro is not active.';
         }
-       // $chatbot_settings = $this->get_chatbot_settings(); // Stellen Sie sicher, dass Sie eine Methode implementieren, die die aktuellen Einstellungen des Chatbots abruft
+
+        // Enqueue scripts and styles only when the shortcode is processed
+        $this->enqueue_scripts();
+
         $form_elements = $this->generate_form_elements_from_parameters();
 
         // Form header
         $form_header = '<h2 class="mb-3">' . __('Chatbot Settings') . '<br>
         <span class="chatbot-info text-muted">
-        BotId: <span id="botId-info"></span><br>
-        Name: <span id="name-info"></span>        
+        BotId: <span id="botId-info"></span>
+        <!-- <br>Name: <span id="name-info"></span> -->
         </span>
         </h2>';
 
@@ -192,7 +215,6 @@ class SintacsMwaiFrontendChatbotSettings
         <form id="ai-engine-extension-form" class="needs-validation bg-white p-2" novalidate>' . $form_header . $form_body . $form_footer . '<button type="submit" class="btn btn-primary btn-sm m-2 d-block mx-auto">' . __( 'Save' ) . '</button></form></div>';
 
         return $form_html;
-
     }
 
     public function generate_form_elements_from_parameters()
@@ -204,23 +226,40 @@ class SintacsMwaiFrontendChatbotSettings
         $form_elements .= wp_nonce_field('sichere_handlung', 'security', true, false);
 
         foreach ($this->parameter_names as $parameter_name) {
-            // Check if the parameter exists in the Chatbot settings
+            // ToDo: Check if the parameter exists in the Chatbot settings
 
-            //$value = esc_attr($chatbot_settings[$parameter_name]); // Ensure the value of the parameter
+            // readonly Parameters werden angezeigt, können aber nicht geändert werden
+            $readonly = in_array($parameter_name, $this->readonly_parameters) ? ' readonly' : '';
+
             $label = esc_html(ucfirst(str_replace('_',' ',$parameter_name))); // Generate label from parameter name
 
             // Differentiate form elements based on parameter type
             switch ($parameter_name) {
                 case 'model': // Dropdown for models
                     $form_elements .= "<div class='form-floating m-2'>";
-                    $form_elements .= "<select id='{$parameter_name}' name='{$parameter_name}' class='form-select form-select-sm'>";
+                    $form_elements .= "<select id='{$parameter_name}' name='{$parameter_name}' class='form-select form-select-sm'{$readonly}>";
                     $form_elements .= "</select>";
                     $form_elements .= "<label for='{$parameter_name}'>{$label}</label></div>";
                     break;
-                case 'instructions': // Textarea for instructions
+                case 'instructions':// Textarea for instructions
+                case 'context':// Textarea for instructions
                     $form_elements .= "<div class='form-floating m-2'>";
-                    $form_elements .= "<textarea id='{$parameter_name}' name='{$parameter_name}' class='form-control form-control-sm' placeholder='{$label}'></textarea>";
+                    $form_elements .= "<textarea id='{$parameter_name}' name='{$parameter_name}' class='form-control form-control-sm' placeholder='{$label}'{$readonly}></textarea>";
                     $form_elements .= "<label for='{$parameter_name}'>{$label}</label></div>";
+                    break;
+
+                case 'mode':
+                    $modes = $this->chatbot_modes;
+
+                    // Add the Select field for mode
+                    $form_elements .= "<div class='form-floating m-2'>";
+                    $form_elements .= "<select id='mode' name='mode' class='form-select form-select-sm'{$readonly}>";
+                    foreach ($modes as $mode) {
+                        //$selected = ($chatbot_settings['envId'] == $env['id']) ? ' selected' : '';
+                        $form_elements .= "<option value='{$mode}'>{$mode}</option>";
+                    }
+                    $form_elements .= "</select>";
+                    $form_elements .= "<label for='mode'>Mode</label></div>";
                     break;
 
                 case 'envId':
@@ -228,7 +267,7 @@ class SintacsMwaiFrontendChatbotSettings
 
                     // Add the Select field for environments
                     $form_elements .= "<div class='form-floating m-2'>";
-                    $form_elements .= "<select id='envId' name='envId' class='form-select form-select-sm'>";
+                    $form_elements .= "<select id='envId' name='envId' class='form-select form-select-sm'{$readonly}>";
                     foreach ($environments as $env) {
                         //$selected = ($chatbot_settings['envId'] == $env['id']) ? ' selected' : '';
                         $form_elements .= "<option value='{$env['id']}'>{$env['name']}</option>";
@@ -244,14 +283,14 @@ class SintacsMwaiFrontendChatbotSettings
                 case 'localMemory' :
                 case 'contentAware' :
 
-                    $form_elements .= "<div class='form-check form-switch m-2'>";
-                    $form_elements .= "<input class='form-check-input' type='checkbox' id='{$parameter_name}' name='{$parameter_name}' value='1' >";
+                    $form_elements .= "<div class='form-check form-switch m-2 py-2'>";
+                    $form_elements .= "<input class='form-check-input' type='checkbox' id='{$parameter_name}' name='{$parameter_name}' value='1' {$readonly}>";
                     $form_elements .= "<label class='form-check-label' for='{$parameter_name}'>{$label}</label></div>";
                     break;
 
                 default: // Standard text fields for other parameters
                     $form_elements .= "<div class='form-floating m-2'>";
-                    $form_elements .= "<input type='text' id='{$parameter_name}' name='{$parameter_name}' value='' class='form-control form-control-sm' placeholder='{$label}'>";
+                    $form_elements .= "<input type='text' id='{$parameter_name}' name='{$parameter_name}' value='' class='form-control form-control-sm' placeholder='{$label}'{$readonly}>";
                     $form_elements .= "<label for='{$parameter_name}'>{$label}</label></div>";
                     break;
             }
@@ -270,7 +309,6 @@ class SintacsMwaiFrontendChatbotSettings
 
         $chatbots = $this->get_wp_option('mwai_chatbots');
 
-        $chatbot_settings = [];
         if (!empty($chatbots)) {
             foreach ($chatbots as $chatbot) {
                 if (isset($chatbot['botId']) && $chatbot['botId'] === $chatbot_id) {
@@ -284,10 +322,16 @@ class SintacsMwaiFrontendChatbotSettings
 
     private function get_available_models()
     {
-
         $options = $this->get_wp_option('mwai_options'); 
 
         $models = [];
+
+        // Add default model
+        $models[] = [
+            'model' => '',
+            'name' => 'Default'
+        ];
+
         if (isset($options['openai_models'])) {
             $models = array_merge($models,$options['openai_models']);
         }
@@ -366,15 +410,15 @@ class SintacsMwaiFrontendChatbotSettings
 
     public function get_all_mwai_options($option = 'null')
     {
-        $options = $this->get_wp_option('mwai_options'); 
+        $options = $this->get_wp_option('mwai_options');
+
         if ($option) {
             return $options[$option];
         }
         return $options ?? []; // Return all environments
     }
 
-    private function current_user_has_access()
-    {
+    private function current_user_has_access(): bool {
         $user = wp_get_current_user();
         $roles = (array)$user->roles;
         foreach ($roles as $role) {

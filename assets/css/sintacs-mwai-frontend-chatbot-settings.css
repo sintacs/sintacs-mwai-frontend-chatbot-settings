@@ -1,11 +1,15 @@
-.form-select, .form-check, .form-check input {
-    border-width: 1px;
-    border-style: solid;
-    border-color: #ced4da;
+.form-select, .form-check, .form-check input, .form-control {
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: #ced4da !important;
 }
 
 .form-check {
     padding-left: 50px !important;
+}
+
+.form-check input[readonly], .form-control[readonly], select[readonly], textarea[readonly] {
+    cursor: not-allowed;
 }
 
 #ai-engine-extension-form-wrapper {

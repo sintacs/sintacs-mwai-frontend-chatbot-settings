@@ -31,3 +31,17 @@
 .chatbot-info {
     font-size: medium;
 }
+
+/* Admin */
+.allowed-roles-select {
+    width: 100%;
+    height: auto;
+    padding: 8px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.allowed-roles-select option {
+    padding: 8px 10px;
+}

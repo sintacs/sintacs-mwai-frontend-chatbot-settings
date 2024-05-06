@@ -9,6 +9,8 @@
 // Ensure that the plugin is not called directly
 defined('ABSPATH') or die('No script kiddies please!');
 
+include_once('sintacs-mwai-frontend-chatbot-settings-admin.php');
+
 class SintacsMwaiFrontendChatbotSettings
 {
     var string $plugin_name = 'Sintacs Mwai Frontend Chatbot Settings';
@@ -43,7 +45,7 @@ class SintacsMwaiFrontendChatbotSettings
     var array $readonly_parameters = ['botId'];
     
     // Define an array with the roles that should have access
-    private $allowed_roles = ['administrator','editor']; // Example roles
+    private $allowed_roles;
 
     public function __construct()
     {
@@ -74,6 +76,8 @@ class SintacsMwaiFrontendChatbotSettings
             // Make the array unique
             $this->parameter_names = array_unique($this->parameter_names);
         }
+
+        $this->allowed_roles = get_option('sintacs_mwai_chatbot_frontend_allowed_roles', ['administrator']); // Default to 'administrator' if not set
     }
 
     public function check_ai_engine_plugin_status()
@@ -183,7 +187,7 @@ class SintacsMwaiFrontendChatbotSettings
     public function form_shortcode()
     {
         if (!$this->current_user_has_access()) {
-            return 'You must be an administrator or editor to change these settings.';
+            return 'You are not allowed to access this feature.';
         }
 
         if (!$this->is_ai_engine_pro_active()) {

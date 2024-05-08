@@ -1,12 +1,12 @@
 <?php
 class SintacsMwaiFrontendChatbotSettingsAdmin {
 	public function __construct() {
-		add_action('admin_menu', array($this, 'add_admin_menu'));
+		add_action('admin_menu', array($this, 'add_admin_menu'),9);
 		add_action('admin_init', array($this, 'settings_init'));
 	}
 
 	public function add_admin_menu() {
-/*
+
 		add_menu_page(
 			'AI Engine Frontend Chatbot Settings',
 			'AI Engine Chatbot Frontend Settings',
@@ -14,7 +14,7 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 			'ai-engine-frontend',
 			[$this,'settings_page_html'] // function
 		);
-*/
+/*
 		// Add submenu page to Meow Apps main menu
 		add_submenu_page(
 			'meowapps-main-menu',
@@ -24,7 +24,7 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 			'chats_frontend_settings',
 			[$this,'settings_page_html'] // function
 		);
-
+		*/
 		// Add to tools page
 		add_management_page(
 			'AI Engine Frontend Chatbot Settings', // page_title

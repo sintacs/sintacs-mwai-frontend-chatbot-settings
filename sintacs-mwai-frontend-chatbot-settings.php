@@ -191,7 +191,7 @@ class SintacsMwaiFrontendChatbotSettings
         }
 
         if (!$this->is_ai_engine_pro_active()) {
-            return 'AI Engine Pro is not active.';
+            return 'AI Engine (Pro) is not active.';
         }
 
         // Enqueue scripts and styles only when the shortcode is processed

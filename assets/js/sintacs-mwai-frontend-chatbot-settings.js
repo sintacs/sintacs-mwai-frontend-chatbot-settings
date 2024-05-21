@@ -13,8 +13,10 @@ jQuery(document).ready(function ($) {
                     var chatElementId = $chatElement.attr('id');
                     chatbotId = chatElementId.replace('mwai-chatbot-', '');
                     $('#botId-info').text(chatbotId);
-                    console.log("Chatbot ID:", chatbotId);
+                    
                 }
+
+                console.log("Chatbot ID:", chatbotId);
 
                 // The chatbot is loaded, bind the form submit event here
                 bindFormSubmitEvent();

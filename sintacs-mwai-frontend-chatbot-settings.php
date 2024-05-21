@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Sintacs Mwai Frontend Chatbot Settings
- * Description: Allows users to change chatbot parameters in the frontend.
+ * Description: Allows users to change chatbot parameters on the frontend.
  * Version: 1.0
  * Author: Dirk Krölls, Sintacs
  */

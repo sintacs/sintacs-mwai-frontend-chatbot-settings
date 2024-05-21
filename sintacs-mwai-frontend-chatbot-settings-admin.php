@@ -59,7 +59,12 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 			'sanitize_callback' => array($this, 'sanitize_allowed_roles'),
 			'default' => array()
 		));
-	
+
+		register_setting('ai_engine_frontend', 'sintacs_mwai_chatbot_delete_settings_on_uninstall', array(
+			'sanitize_callback' => 'sanitize_text_field',
+			'default' => '0'
+		));
+
 		add_settings_section(
 			'ai_engine_frontend_section',
 			__('AI Engine Frontend Chatbot Settings', 'textdomain'),
@@ -71,6 +76,14 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 			'sintacs_mwai_chatbot_frontend_allowed_roles',
 			__('Allowed Roles', 'textdomain'),
 			array($this, 'allowed_roles_field_render'),
+			'ai_engine_frontend',
+			'ai_engine_frontend_section'
+		);
+
+		add_settings_field(
+			'sintacs_mwai_chatbot_delete_settings_on_uninstall',
+			__('Delete Settings on Uninstall', 'textdomain'),
+			array($this, 'delete_settings_on_uninstall_field_render'),
 			'ai_engine_frontend',
 			'ai_engine_frontend_section'
 		);
@@ -88,7 +101,15 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 		}
 		echo '</select>';
 	}
-	
+
+	public function delete_settings_on_uninstall_field_render() {
+		$option = get_option('sintacs_mwai_chatbot_delete_settings_on_uninstall', '0');
+		?>
+		<input type="checkbox" name="sintacs_mwai_chatbot_delete_settings_on_uninstall" value="1" <?php checked('1', $option); ?> />
+		<label for="sintacs_mwai_chatbot_delete_settings_on_uninstall"><?php _e('Delete all settings when the plugin is deleted', 'textdomain'); ?></label>
+		<?php
+	}
+
 	public function settings_section_callback() {
 		echo __('Set the roles allowed to change settings.', 'textdomain');
 	}

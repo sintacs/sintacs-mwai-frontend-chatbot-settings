@@ -21,7 +21,8 @@ Dirk Krölls, Sintacs
   - This setting ensures that only authorized users can make changes to the chatbot configurations.
 
 ## Usage
-- Use the shortcode `[ai_engine_extension_form]` to display the chatbot settings form on any page.
+- Use the shortcode `[ai_engine_extension_form chatbot_id="your_chatbot_id"]` to display the chatbot settings form on any page.
+  - The `chatbot_id` attribute is optional. If not provided, the plugin will attempt to determine the chatbot ID dynamically.
 - Only defined user roles can change settings, depending on the configuration in the new admin settings page.
 
 ## Features

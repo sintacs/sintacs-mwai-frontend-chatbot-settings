@@ -1,4 +1,6 @@
 jQuery(document).ready(function ($) {
+    var chatbotId = $('#sintacs-ai-engine-extension-form input[name="botId"]').val();
+
     function waitForChatbot() {
         var checkExist = setInterval(function () {
             var $chatElement = $('.mwai-chatbot-container .mwai-chat');
@@ -6,11 +8,13 @@ jQuery(document).ready(function ($) {
                 console.log("Chatbot element found.");
                 clearInterval(checkExist);
 
-                // Extracting the Chatbot ID from the ID of the child element
-                var chatElementId = $chatElement.attr('id');
-                chatbotId = chatElementId.replace('mwai-chatbot-', '');
-                $('#botId-info').text(chatbotId);
-                console.log("Chatbot ID:", chatbotId);
+                // Extracting the Chatbot ID from the ID of the child element if not already set
+                if (!chatbotId) {
+                    var chatElementId = $chatElement.attr('id');
+                    chatbotId = chatElementId.replace('mwai-chatbot-', '');
+                    $('#botId-info').text(chatbotId);
+                    console.log("Chatbot ID:", chatbotId);
+                }
 
                 // The chatbot is loaded, bind the form submit event here
                 bindFormSubmitEvent();
@@ -20,9 +24,9 @@ jQuery(document).ready(function ($) {
             } else {
                 console.log("No chatbot element found on the page.");
                 // Check if an attempt has already been made to find the chatbot
-                if ($('#ai-engine-extension-form').length) {
+                if ($('#sintacs-ai-engine-extension-form').length) {
                     // Hide form and replace it with an invisible comment
-                    $('#ai-engine-extension-form').replaceWith('No chatbot found on the current page.');
+                    $('#sintacs-ai-engine-extension-form').replaceWith('No chatbot found on the current page.');
                     clearInterval(checkExist);
                 }
             }
@@ -30,11 +34,11 @@ jQuery(document).ready(function ($) {
     }
 
     function toggleFormElements(disabled) {
-        $('#ai-engine-extension-form').find('button[type="submit"], :input').prop('disabled', disabled);
+        $('#sintacs-ai-engine-extension-form').find('button[type="submit"], :input').prop('disabled', disabled);
     }
 
     function bindFormSubmitEvent() {
-        $('#ai-engine-extension-form').submit(function (e) {
+        $('#sintacs-ai-engine-extension-form').submit(function (e) {
             e.preventDefault();
 
             // Serialize the form data before disabling the fields
@@ -55,13 +59,13 @@ jQuery(document).ready(function ($) {
                     // Display response message as alert if exist
                     if (response.data.message) {
                         // Add Success border to the form
-                        $('#ai-engine-extension-form-wrapper').addClass('border border-success');
+                        $('#sintacs-ai-engine-extension-form-wrapper').addClass('border border-success');
                         $('#form-success-message').text(response.data.message);
                         $('#form-success-message').show();
                         // Reload the page to take the changed settings into effect
                         location.reload();
                     } else {
-                        $('#ai-engine-extension-form-wrapper').addClass('border border-danger');
+                        $('#sintacs-ai-engine-extension-form-wrapper').addClass('border border-danger');
                         alert('Something went wrong. Please try again.');
                     }
                 },
@@ -138,7 +142,7 @@ jQuery(document).ready(function ($) {
     }
 
     function updateFormFieldsFromChatbotSettings(chatbotSettings) {
-        $('#ai-engine-extension-form').find(':input').each(function () {
+        $('#sintacs-ai-engine-extension-form').find(':input').each(function () {
             var inputName = $(this).attr('name');
             if (chatbotSettings[inputName] !== undefined) {
                 // Checkboxes

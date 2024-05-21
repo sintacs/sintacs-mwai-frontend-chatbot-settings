@@ -9,8 +9,8 @@
 // Ensure that the plugin is not called directly
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
-//include_once( 'sintacs-mwai-frontend-chatbot-settings-admin.php' );
-include_once( 'sintacs-mwai-frontend-discussions.php' );
+include_once( 'sintacs-mwai-frontend-chatbot-settings-admin.php' );
+//include_once( 'sintacs-mwai-frontend-discussions.php' );
 
 class SintacsMwaiFrontendChatbotSettings {
 	var string $plugin_name = 'Sintacs Mwai Frontend Chatbot Settings';

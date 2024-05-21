@@ -23,6 +23,13 @@ register_activation_hook( __FILE__, 'sintacs_mwai_frontend_chatbot_settings_acti
 // Register the uninstall hook
 register_uninstall_hook(__FILE__, 'sintacs_mwai_frontend_chatbot_settings_uninstall');
 
+// Add settings link on plugin page
+function sintacs_mwai_frontend_chatbot_settings_action_links($links) {
+    $settings_link = '<a href="admin.php?page=chats_frontend_settings">' . __('Settings') . '</a>';
+    array_unshift($links, $settings_link);
+    return $links;
+}
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'sintacs_mwai_frontend_chatbot_settings_action_links');
 
 class SintacsMwaiFrontendChatbotSettings {
     var string $plugin_name = 'Sintacs Mwai Frontend Chatbot Settings';
@@ -451,3 +458,4 @@ class SintacsMwaiFrontendChatbotSettings {
 }
 
 new SintacsMwaiFrontendChatbotSettings();
+

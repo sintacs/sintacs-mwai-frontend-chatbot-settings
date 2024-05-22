@@ -2,6 +2,7 @@
 
 ## Description
 This WordPress plugin allows users to change chatbot parameters directly from the frontend. It is designed to work with the AI Engine or AI Engine Pro plugins.
+It allows you to edit existing chatbot in the frontend. All changes are saved into the backend on AI ReaEngine Admin. It requires having the chatbot previously created on the Backend.
 
 ## Version
 1.0

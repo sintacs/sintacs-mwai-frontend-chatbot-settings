@@ -55,6 +55,7 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
             <p><?php _e('Use the following shortcode to insert the chatbot form into a post or page:', 'textdomain'); ?></p>
             <input type="text" id="chatbot-shortcode" value="[ai_engine_extension_form chatbot_id=&quot;your_chatbot_id&quot;]" readonly style="width: 100%; max-width: 600px;">
             <button id="copy-shortcode-button" class="button"><?php _e('Copy Shortcode', 'textdomain'); ?></button>
+            <p><?php _e('If you do not specify a chatbot ID, it will default to the first chatbot on the current post / page.', 'textdomain'); ?></p>
         </div>
         <?php
     }

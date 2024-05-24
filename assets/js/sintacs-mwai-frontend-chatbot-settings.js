@@ -13,7 +13,7 @@ jQuery(document).ready(function ($) {
                     var chatElementId = $chatElement.attr('id');
                     chatbotId = chatElementId.replace('mwai-chatbot-', '');
                     $('#botId-info').text(chatbotId);
-                    
+
                 }
 
                 console.log("Chatbot ID:", chatbotId);
@@ -23,6 +23,17 @@ jQuery(document).ready(function ($) {
 
                 // Update models based on the Chatbot ID
                 updateModelsDropdown();
+
+                    // Event listener for the textarea focus event
+                $('#instructions').on('focus', function () {
+                    adjustTextareaHeight(this);
+                });
+
+                // Optionally, adjust the height on input as well
+                $('#instructions').on('input', function () {
+                    adjustTextareaHeight(this);
+                });
+
             } else {
                 console.log("No chatbot element found on the page.");
                 // Check if an attempt has already been made to find the chatbot
@@ -127,39 +138,125 @@ jQuery(document).ready(function ($) {
                     }
 
                     if (!modelFound) {
-                        console.log('model found: ' + modelFound);
                         // No model selected -> choose model
                         $modelSelect.prepend($('<option></option>').attr('value', '').text('Choose model').prop('selected', true));
                         // Update select field to show selected option
                         $modelSelect.find('option:first').prop('selected', true);
                     }
-
                 }
 
                 if (response.success && response.data['chatbot_settings']) {
-                    updateFormFieldsFromChatbotSettings(response.data['chatbot_settings']);
+                    updateFormFieldsFromChatbotSettings(response.data['chatbot_settings'], response.data['default_settings']);
                 }
             }
         });
     }
 
-    function updateFormFieldsFromChatbotSettings(chatbotSettings) {
+    function updateFormFieldsFromChatbotSettings(chatbotSettings, defaultSettings) {
         $('#sintacs-ai-engine-extension-form').find(':input').each(function () {
-            var inputName = $(this).attr('name');
-            if (chatbotSettings[inputName] !== undefined) {
-                // Checkboxes
+            let inputName = $(this).attr('name');
+            let userValue = chatbotSettings[inputName];
+            let defaultValue = defaultSettings[inputName];
+
+            if (userValue !== undefined && userValue !== false) {
                 if ($(this).attr('type') === 'checkbox') {
-                    if (chatbotSettings[inputName] === '1') {
-                        $(this).prop('checked', chatbotSettings[inputName]);
-                    } else {
-                        $(this).prop('checked', false);
-                    }
+                    $(this).prop('checked', userValue == '1' || userValue === true);
                 } else {
-                    $(this).val(chatbotSettings[inputName]);
+                    var textArea = document.createElement('textarea');
+                    textArea.innerHTML = userValue;
+                    userValue = textArea.value;
+
+                    var isNumeric = /^-?\d*\.?\d+$/.test(userValue);
+                    if (isNumeric) {
+                        userValue = parseFloat(userValue);
+                    } else {
+                        userValue = userValue.replace(/\u00A0/g, ' ');
+                    }
+                    $(this).val(userValue);
+                }
+                if (userValue != defaultValue) {
+                    $(this).val(userValue);
+                    $(this).siblings('label').find('span').text('🔵').attr('title', 'Default: ' + defaultValue);
+                } else {
+                    $(this).siblings('label').find('span').text('');
+                }
+            } else {
+                if (defaultValue !== undefined) {
+                    if ($(this).attr('type') === 'checkbox') {
+                        $(this).prop('checked', defaultValue == '1' || defaultValue === true);
+                    } else {
+                        defaultValue = defaultValue.replace(/&nbsp;/g, ' ');
+                        $(this).val(defaultValue);
+                    }
+                }
+                $(this).siblings('label').find('span').text('');
+            }
+        });
+
+        // Display temperature value
+        displayTemperatureValue();
+    }
+
+    function encodeTrailingSpaces(value) {
+        return value.replace(/ $/, '&nbsp;');
+    }
+
+    $('#save-to-original').click(function () {
+        var formData = $('#sintacs-ai-engine-extension-form').serializeArray();
+        formData.forEach(function (field) {
+            field.value = encodeTrailingSpaces(field.value);
+        });
+
+        $.ajax({
+            type: "POST",
+            url: aiEngineExtensionAjax.ajaxurl,
+            data: {
+                action: 'save_to_original',
+                chatbotId: chatbotId,
+                formData: $.param(formData)
+            },
+            success: function (response) {
+                alert(response.data.message);
+            }
+        });
+    });
+
+    $('#reset-to-default').click(function () {
+        $.ajax({
+            type: "POST",
+            url: aiEngineExtensionAjax.ajaxurl,
+            data: {
+                action: 'get_default_settings',
+                chatbotId: $('#sintacs-ai-engine-extension-form input[name="botId"]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    updateFormFieldsFromChatbotSettings(response.data.default_settings, response.data.user_settings);
+                    alert('Default settings loaded but not saved.');
+                } else {
+                    alert('Failed to load default settings.');
                 }
             }
         });
+    });
+
+    // Ensure the temperature value is displayed correctly on load
+    function displayTemperatureValue() {
+        var temperatureInput = $('#temperature');
+        if (temperatureInput.length) {
+            var temperatureValue = $('#temperature_value');
+            var inputValue = temperatureInput.val(); // Get the current value of the input
+            console.log('Input temperature value: ' + inputValue); // Correctly log the input value
+            temperatureValue.text(inputValue); // Set the text of temperatureValue to the input's value
+        }
+    }
+
+    // Function to adjust the height of the textarea
+    function adjustTextareaHeight(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
     }
 
     waitForChatbot();
+    displayTemperatureValue();
 });

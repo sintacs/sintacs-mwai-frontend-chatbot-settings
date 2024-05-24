@@ -5,7 +5,7 @@ This WordPress plugin allows users to change chatbot parameters directly from th
 It allows you to edit existing chatbot in the frontend. All changes are saved into the backend on AI ReaEngine Admin. It requires having the chatbot previously created on the Backend.
 
 ## Version
-1.0
+1.1
 
 ## Author
 Dirk Krölls, Sintacs
@@ -15,7 +15,7 @@ Dirk Krölls, Sintacs
 2. Upload the `sintacs-mwai-frontend-chatbot-settings` folder to the `/wp-content/plugins/` directory.
 3. Activate the plugin through the 'Plugins' menu in WordPress.
 
-## New Features
+## Features
 - Admin page to configure allowed roles:
   - Navigate to the 'AI Engine Frontend Chatbot Settings' menu in your WordPress admin panel.
   - Use the 'Allowed Roles' setting to specify which user roles are permitted to modify chatbot settings.
@@ -27,15 +27,30 @@ Dirk Krölls, Sintacs
 - Only defined user roles can change settings, depending on the configuration in the new admin settings page.
 
 ## Features
-- Dynamic parameter handling based on defined chatbot settings.
-- AJAX-based form submission for seamless user experience.
-- Security checks to prevent unauthorized access.
-- Admin page to configure which roles can manage chatbot settings.
+- **Dynamic Parameter Handling**: Adjusts parameters based on defined chatbot settings.
+- **AJAX-based Form Submission**: Ensures a seamless user experience without page reloads.
+- **Security Checks**: Prevents unauthorized access to chatbot configurations.
+- **Admin Page Configuration**: Allows configuration of roles that can manage chatbot settings.
 
 ## Dependencies
 - AI Engine or AI Engine Pro plugin must be active.
 
 ## Changelog
+
+### 1.1
+## New
+Admin
+- Added "Delete Settings on Uninstall" option to allow clean removal of plugin data when uninstalled.
+- Added "Show 'Save to Original' Button" setting for better control over frontend display.
+- Implemented sortable parameters feature for customizing the display order of chatbot settings.
+
+Frontend
+- Added 'Save to Original' Button to save the user settings to the original chatbot.
+- Added 'Reset to Original' Button to reset the settings to the chatbot original.
+- Changed temperature parameter from text input to range slider.
+
+- Various layout and style optimizations
+
 ### 1.0
 - Initial release.
 - Added admin page for role-based access control.

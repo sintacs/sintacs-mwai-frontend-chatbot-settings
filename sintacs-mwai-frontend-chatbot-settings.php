@@ -344,7 +344,7 @@ class SintacsMwaiFrontendChatbotSettings {
                 case 'temperature':
                     $form_elements .= "<div class='sintacs-form-floating temperature' style=''>";
                     $form_elements .= "<label for='{$parameter_name}' id='{$parameter_name}-label'>{$label} <span>{$icon}</span></label>";
-                    $form_elements .= "<input type='range' id='{$parameter_name}' name='{$parameter_name}' min='0.1' max='1' step='0.1' value='{$value}' class='sintacs-form-range'{$readonly} oninput='document.getElementById(\"{$parameter_name}_value\").innerText = this.value'>";
+                    $form_elements .= "<input type='range' id='{$parameter_name}' name='{$parameter_name}' min='0.0' max='1' step='0.1' value='{$value}' class='sintacs-form-range'{$readonly} oninput='document.getElementById(\"{$parameter_name}_value\").innerText = this.value'>";
                     $form_elements .= "<span id='{$parameter_name}_value' class='sintacs-range-value'>{$value}</span>";
                     $form_elements .= "</div>";
                     break;

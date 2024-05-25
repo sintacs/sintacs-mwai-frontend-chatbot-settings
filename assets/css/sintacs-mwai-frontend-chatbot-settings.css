@@ -132,13 +132,13 @@
     border: 1px solid #e9e9e9;
 }
 
+/* Custom styles for the temperature range slider */
 .temperature {
     padding: 10px;
     padding-left: 12px;
     padding-top: 19px;
     border: 1px solid #8f8f9d;
     border-radius: 0px;
-
 }
 
 .temperature label {
@@ -146,6 +146,95 @@
     transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
 
+.sintacs-form-range {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 1.4rem;
+    background: #e9ecef;
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+    outline: none;
+    padding: 0;
+    margin: 0.5rem 0;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.sintacs-form-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 1.4rem;
+    height: 1.4rem;
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.sintacs-form-range::-moz-range-thumb {
+    width: 1.4rem;
+    height: 1.4rem;
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.sintacs-form-range::-ms-thumb {
+    width: 1.4rem;
+    height: 1.4rem;
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.sintacs-form-range:focus {
+    background-color: #e2e6ea;
+    border-color: #80bdff;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.sintacs-form-range::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 1.4rem;
+    cursor: pointer;
+    background: #e9ecef;
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+}
+
+.sintacs-form-range::-moz-range-track {
+    width: 100%;
+    height: 1.4rem;
+    cursor: pointer;
+    background: #e9ecef;
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+}
+
+.sintacs-form-range::-ms-track {
+    width: 100%;
+    height: 1.4rem;
+    cursor: pointer;
+    background: transparent;
+    border-color: transparent;
+    color: transparent;
+}
+
+.sintacs-form-range::-ms-fill-lower {
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.sintacs-form-range::-ms-fill-upper {
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
 
 /* Form elements */
 .sintacs-form-floating {
@@ -308,4 +397,5 @@
         width: 100%;
         margin-bottom: 10px;
     }
+}
 }

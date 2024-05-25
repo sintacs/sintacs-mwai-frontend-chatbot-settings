@@ -3,8 +3,9 @@ jQuery(document).ready(function ($) {
 
     function waitForChatbot() {
         var checkExist = setInterval(function () {
+            var chatbotId = $('#sintacs-ai-engine-extension-form input[name="botId"]').val();
             var $chatElement = $('.mwai-chatbot-container .mwai-chat');
-            if ($chatElement.length && $chatElement.attr('id')) {
+            if ($chatElement.length && $chatElement.attr('id') || chatbotId) {
                 console.log("Chatbot element found.");
                 clearInterval(checkExist);
 
@@ -18,7 +19,12 @@ jQuery(document).ready(function ($) {
 
                 console.log("Chatbot ID:", chatbotId);
 
-                // The chatbot is loaded, bind the form submit event here
+                // Check if the form does not exist
+                if (!$('#sintacs-ai-engine-extension-form input:not([type="hidden"])').length) {
+                    $('.sintacs-btn-wrapper').hide();
+                    return;
+                }
+
                 bindFormSubmitEvent();
 
                 // Update models based on the Chatbot ID
@@ -145,7 +151,8 @@ jQuery(document).ready(function ($) {
                     }
                 }
 
-                if (response.success && response.data['chatbot_settings']) {
+                if (response.success && response.data['default_settings']) {
+                    console.log('Chatbot settings received. Updating form fields...');
                     updateFormFieldsFromChatbotSettings(response.data['chatbot_settings'], response.data['default_settings']);
                 }
             }
@@ -153,6 +160,14 @@ jQuery(document).ready(function ($) {
     }
 
     function updateFormFieldsFromChatbotSettings(chatbotSettings, defaultSettings) {
+
+        // if the chatbot settings are empty, set the default settings
+        // needs better checking, if it is empty or not
+        if (Object.keys(chatbotSettings).length === 0) {
+            console.log('Chatbot settings are empty. Using default settings.');
+            chatbotSettings = defaultSettings;
+        }
+
         $('#sintacs-ai-engine-extension-form').find(':input').each(function () {
             let inputName = $(this).attr('name');
             let userValue = chatbotSettings[inputName];
@@ -246,12 +261,11 @@ jQuery(document).ready(function ($) {
         if (temperatureInput.length) {
             var temperatureValue = $('#temperature_value');
             var inputValue = temperatureInput.val(); // Get the current value of the input
-            console.log('Input temperature value: ' + inputValue); // Correctly log the input value
             temperatureValue.text(inputValue); // Set the text of temperatureValue to the input's value
         }
     }
 
-    // Function to adjust the height of the textarea
+    // Function to adjust the height of the textarea on focus
     function adjustTextareaHeight(textarea) {
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';

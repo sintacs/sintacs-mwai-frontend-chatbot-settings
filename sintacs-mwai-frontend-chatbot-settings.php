@@ -9,12 +9,32 @@
 // Ensure that the plugin is not called directly
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
-include_once( 'sintacs-mwai-frontend-chatbot-settings-admin.php' );
+// Define the parameters to skip as a constant
+const SINTACS_MWAI_CHATBOT_PARAMETER_TO_SKIP = [
+	'icon',
+	'iconText',
+	'iconAlt',
+	'iconPosition',
+	'scope',
+	'apiKey',
+	'botId'
+];
+
+include_once('sintacs-mwai-frontend-chatbot-settings-admin.php');
 
 // Define the activation function
 function sintacs_mwai_frontend_chatbot_settings_activate() {
-    // Set the default allowed roles to 'administrator'
-    update_option( 'sintacs_mwai_chatbot_frontend_allowed_roles', [ 'administrator' ] );
+    // Set the default allowed roles to 'administrator' if not already set
+    if (get_option('sintacs_mwai_chatbot_frontend_allowed_roles') === false) {
+        update_option('sintacs_mwai_chatbot_frontend_allowed_roles', [ 'administrator' ]);
+    }
+
+    // Set all parameters to be shown by default, excluding those in SINTACS_MWAI_CHATBOT_PARAMETER_TO_SKIP
+    if (defined('MWAI_CHATBOT_DEFAULT_PARAMS') && get_option('sintacs_mwai_chatbot_parameters_to_show') === false) {
+        $all_parameters = array_keys(MWAI_CHATBOT_DEFAULT_PARAMS);
+        $parameters_to_show = array_diff($all_parameters, SINTACS_MWAI_CHATBOT_PARAMETER_TO_SKIP);
+        update_option('sintacs_mwai_chatbot_parameters_to_show', $parameters_to_show);
+    }
 }
 
 function get_theme_option_name($object) {
@@ -58,15 +78,7 @@ class SintacsMwaiFrontendChatbotSettings {
     var array $parameter_names = [];
 
     // Parameter names to skip from the form in the frontend
-    var array $parameter_to_skip = [
-        'icon',
-        'iconText',
-        'iconAlt',
-        'iconPosition',
-        'scope',
-        'apiKey',
-        'botId'
-    ];
+    var array $parameter_to_skip = [];
 
     // Parameter names to show in the frontend
     // These field(s) are missing in the init constant so we add it here manually. Use it for sorting too. ToDo: add parameter dynamically
@@ -79,6 +91,10 @@ class SintacsMwaiFrontendChatbotSettings {
     private $allowed_roles;
 
     public function __construct() {
+
+        // set parameter_tq_skip to constant
+        $this->parameter_to_skip = SINTACS_MWAI_CHATBOT_PARAMETER_TO_SKIP;
+
         add_action( 'plugins_loaded',array( $this,'check_ai_engine_plugin_status' ) );
         //add_action('wp_enqueue_scripts',array($this,'enqueue_scripts'));
 
@@ -172,7 +188,7 @@ class SintacsMwaiFrontendChatbotSettings {
         }
     
         parse_str( nl2br( $_POST['formData'] ), $formDataArray );
-    
+
         if ( ! isset( $formDataArray['security'] ) || ! wp_verify_nonce( $formDataArray['security'], 'sichere_handlung' ) ) {
             wp_send_json_error( [ 'message' => 'Security check failed.' ] );
             return;
@@ -262,6 +278,10 @@ class SintacsMwaiFrontendChatbotSettings {
 
         $form_elements .= '<input type="hidden" name="botId" value="' . esc_attr($chatbot_id) . '" class="sintacs-form-control sintacs-form-control-sm">';
         $form_elements .= wp_nonce_field('sichere_handlung', 'security', true, false);
+
+        if(empty($parameters_to_show[0])) {
+            return $form_elements . 'No parameters to show.';
+        }
 
         foreach ($parameters_to_show as $parameter_name) {
             $readonly = in_array($parameter_name, $this->readonly_parameters) ? ' readonly' : '';

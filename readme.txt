@@ -2,7 +2,7 @@
 
 ## Description
 This WordPress plugin allows users to change chatbot parameters directly from the frontend. It is designed to work with the AI Engine or AI Engine Pro plugins.
-It allows you to edit existing chatbot in the frontend. All changes are saved into the backend on AI ReaEngine Admin. It requires having the chatbot previously created on the Backend.
+It allows you to edit existing chatbot settings in the frontend and save settings per user with the option to update the original chatbot settings. It requires having the chatbot previously created.
 
 ## Version
 1.1
@@ -15,22 +15,28 @@ Dirk Krölls, Sintacs
 2. Upload the `sintacs-mwai-frontend-chatbot-settings` folder to the `/wp-content/plugins/` directory.
 3. Activate the plugin through the 'Plugins' menu in WordPress.
 
-## Features
-- Admin page to configure allowed roles:
-  - Navigate to the 'AI Engine Frontend Chatbot Settings' menu in your WordPress admin panel.
-  - Use the 'Allowed Roles' setting to specify which user roles are permitted to modify chatbot settings.
-  - This setting ensures that only authorized users can make changes to the chatbot configurations.
+## Admin page settings:
+- Navigate to the 'AI Engine Frontend Chatbot Settings' menu in your WordPress admin panel.
+- Use the 'Allowed Roles' setting to specify which user roles are permitted to modify chatbot settings. This setting ensures that only authorized users can make changes to the chatbot configurations.
+- Use the 'Show Save to Original' Button to save the chatbot user settings to the original chatbot (override settings).
+- Set the 'Parameters to Show' setting to specify which parameters should be shown in the chatbot settings form. This setting ensures that only the selected parameters are shown in the form.
+- Use Drag and Drop to reorder the 'Parameters to Show'.
 
 ## Usage
 - Use the shortcode `[ai_engine_extension_form chatbot_id="your_chatbot_id"]` to display the chatbot settings form on any page.
-  - The `chatbot_id` attribute is optional. If not provided, the plugin will attempt to determine the chatbot ID dynamically.
+- The `chatbot_id` attribute is optional. If not provided, the plugin will attempt to determine the chatbot ID dynamically.
 - Only defined user roles can change settings, depending on the configuration in the new admin settings page.
+- The chatbot settings will be saved for each user and take only effect for the current user.
+- Use the 'Save to Original' Button to save the user settings to the original chatbot, so that it will effect every user of this chatbot.
+- Use the 'Reset to Original' Button to load the original chatbot settings into the form. Needs save to take effect for the current user.
 
 ## Features
 - **Dynamic Parameter Handling**: Adjusts parameters based on defined chatbot settings.
 - **AJAX-based Form Submission**: Ensures a seamless user experience without page reloads.
 - **Security Checks**: Prevents unauthorized access to chatbot configurations.
 - **Admin Page Configuration**: Allows configuration of roles that can manage chatbot settings.
+- **Frontend Configuration**: Allows configuration of which parameters should be shown and in which order in the chatbot settings form.
+- **The blue icon**: Indicates that the setting differs from the original.
 
 ## Dependencies
 - AI Engine or AI Engine Pro plugin must be active.

@@ -144,6 +144,14 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 		);
 
 		add_settings_field(
+			'sintacs_mwai_chatbot_parameters_to_show',
+			__('Parameters to Show', 'textdomain'),
+			array($this, 'parameters_to_show_field_render'),
+			'ai_engine_frontend',
+			'ai_engine_frontend_section'
+		);
+
+		add_settings_field(
 			'sintacs_mwai_chatbot_frontend_allowed_roles',
 			__('Allowed Roles', 'textdomain'),
 			array($this, 'allowed_roles_field_render'),
@@ -167,13 +175,7 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 			'ai_engine_frontend_section'
 		);
 
-		add_settings_field(
-			'sintacs_mwai_chatbot_parameters_to_show',
-			__('Parameters to Show', 'textdomain'),
-			array($this, 'parameters_to_show_field_render'),
-			'ai_engine_frontend',
-			'ai_engine_frontend_section'
-		);
+
 	}
 
 	public function allowed_roles_field_render() {

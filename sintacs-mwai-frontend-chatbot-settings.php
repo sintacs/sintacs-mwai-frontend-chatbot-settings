@@ -33,6 +33,14 @@ function sintacs_mwai_frontend_chatbot_settings_activate() {
     if (defined('MWAI_CHATBOT_DEFAULT_PARAMS') && get_option('sintacs_mwai_chatbot_parameters_to_show') === false) {
         $all_parameters = array_keys(MWAI_CHATBOT_DEFAULT_PARAMS);
         $parameters_to_show = array_diff($all_parameters, SINTACS_MWAI_CHATBOT_PARAMETER_TO_SKIP);
+
+        // Include the $parameter_to_show property
+        $default_parameters_to_show = (new SintacsMwaiFrontendChatbotSettings())->parameter_to_show;
+        $parameters_to_show = array_merge($default_parameters_to_show, $parameters_to_show);
+
+        // Make para to show unique
+        $parameters_to_show = array_unique($parameters_to_show);
+
         update_option('sintacs_mwai_chatbot_parameters_to_show', $parameters_to_show);
     }
 }
@@ -239,7 +247,7 @@ class SintacsMwaiFrontendChatbotSettings {
         // Form header
         $form_header = '<div class="sintacs-card-header sintacs-d-flex sintacs-justify-content-between sintacs-align-items-center">
                         <h4>Chatbot Settings</h4>
-                        <span id="settings-info"></span>
+                        <span id="name-info"></span>
                     </div>';
 
         // Form body
@@ -404,6 +412,7 @@ class SintacsMwaiFrontendChatbotSettings {
         // Load default settings
         $default_settings = [];
         $chatbots = $this->get_wp_option( 'mwai_chatbots' );
+
         foreach ( $chatbots as $chatbot ) {
             if ( isset( $chatbot['botId'] ) && $chatbot['botId'] === $chatbot_id ) {
                 $default_settings = $chatbot;
@@ -422,7 +431,7 @@ class SintacsMwaiFrontendChatbotSettings {
         $models = [];
 
         // Retrieve default environment and model directly from options
-        $defaultEnvId = isset($options['ai_default_env']) ? $options['ai_default_env'] : null;
+        //$defaultEnvId = isset($options['ai_default_env']) ? $options['ai_default_env'] : null;
         $defaultModel = isset($options['ai_default_model']) ? $options['ai_default_model'] : MWAI_FALLBACK_MODEL;
 
         $models[] = [

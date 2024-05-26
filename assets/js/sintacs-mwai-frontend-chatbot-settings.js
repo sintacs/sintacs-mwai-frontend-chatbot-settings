@@ -6,7 +6,7 @@ jQuery(document).ready(function ($) {
             chatbotId = $('#sintacs-ai-engine-extension-form input[name="botId"]').val();
             var $chatElement = $('.mwai-chatbot-container .mwai-chat');
             if ($chatElement.length && $chatElement.attr('id') || chatbotId) {
-                console.log("Chatbot element found.");
+                console.log("Chatbot element found or chatbot ID set.");
                 clearInterval(checkExist);
 
                 // Extracting the Chatbot ID from the ID of the child element if not already set
@@ -30,7 +30,7 @@ jQuery(document).ready(function ($) {
                 // Update models based on the Chatbot ID
                 updateModelsDropdown();
 
-                    // Event listener for the textarea focus event
+                // Event listener for the textarea focus event
                 $('#instructions').on('focus', function () {
                     adjustTextareaHeight(this);
                 });
@@ -106,7 +106,7 @@ jQuery(document).ready(function ($) {
     }
 
     function updateModelsDropdown() {
-        console.log('Updating models dropdown... Chatbot_Id: ' + chatbotId );
+        console.log('Updating models dropdown... Chatbot ID: ' + chatbotId);
         $.ajax({
             type: "POST",
             url: aiEngineExtensionAjax.ajaxurl,
@@ -126,7 +126,8 @@ jQuery(document).ready(function ($) {
                     });
 
                     // Set chatbot name
-                    var chatbotName = response.data['chatbot_settings']['name'];
+                    // if chatbot_settings name is empty, get it from the default settings
+                    var chatbotName = !response.data['chatbot_settings']['name'] ? response.data['default_settings']['name'] : response.data['chatbot_settings']['name'];
                     $('#name-info').text(chatbotName);
                     console.log('name: ' + chatbotName);
 
@@ -206,7 +207,9 @@ jQuery(document).ready(function ($) {
                     if ($(this).attr('type') === 'checkbox') {
                         $(this).prop('checked', defaultValue == '1' || defaultValue === true);
                     } else {
-                        defaultValue = defaultValue.replace(/&nbsp;/g, ' ');
+                        if (typeof defaultValue === 'string') {
+                            defaultValue = defaultValue.replace(/&nbsp;/g, ' ');
+                        }
                         $(this).val(defaultValue);
                     }
                 }
@@ -216,14 +219,24 @@ jQuery(document).ready(function ($) {
             // if name is Default and value is default, the input field can not be changed
             if ($(this).attr('name') === 'name' && ($(this).val() === 'default') || ($(this).val() === 'Default')) {
                 console.log('name is default, can not be changed');
-                $(this).prop('disabled', true);
+                $(this).prop('readonly', true);
+                $(this).val('Default');
             }
 
             // if field name is envId and value is empty, set the first option to selected
             if ($(this).attr('name') === 'envId' && $(this).val() === null) {
                 console.log('envId is empty, set the first option to selected');
                 $('#envId option:first').prop('selected', true);
+
             }
+
+            console.log('defaultSettings[\'envId\']: ' + defaultSettings['envId']);
+
+            if(defaultSettings['envId'] === null || defaultSettings['envId'] === '' || defaultSettings['envId'] === undefined) {
+
+                $('#envId').siblings('label').find('span').text('');
+            }
+
         });
 
         // Display temperature value

@@ -1,9 +1,9 @@
 jQuery(document).ready(function ($) {
-    var chatbotId = $('#sintacs-ai-engine-extension-form input[name="botId"]').val();
+    chatbotId = $('#sintacs-ai-engine-extension-form input[name="botId"]').val();
 
     function waitForChatbot() {
         var checkExist = setInterval(function () {
-            var chatbotId = $('#sintacs-ai-engine-extension-form input[name="botId"]').val();
+            chatbotId = $('#sintacs-ai-engine-extension-form input[name="botId"]').val();
             var $chatElement = $('.mwai-chatbot-container .mwai-chat');
             if ($chatElement.length && $chatElement.attr('id') || chatbotId) {
                 console.log("Chatbot element found.");
@@ -14,7 +14,7 @@ jQuery(document).ready(function ($) {
                     var chatElementId = $chatElement.attr('id');
                     chatbotId = chatElementId.replace('mwai-chatbot-', '');
                     $('#botId-info').text(chatbotId);
-
+                    console.log('Chatbot_Id extracted from the Chatbot Element: ' + chatbotId);
                 }
 
                 console.log("Chatbot ID:", chatbotId);
@@ -106,6 +106,7 @@ jQuery(document).ready(function ($) {
     }
 
     function updateModelsDropdown() {
+        console.log('Updating models dropdown... Chatbot_Id: ' + chatbotId );
         $.ajax({
             type: "POST",
             url: aiEngineExtensionAjax.ajaxurl,
@@ -144,10 +145,15 @@ jQuery(document).ready(function ($) {
                     }
 
                     if (!modelFound) {
+                        // set the first option as selected
+                        $('#model option:first').prop('selected', true);
+
+                        /*
                         // No model selected -> choose model
                         $modelSelect.prepend($('<option></option>').attr('value', '').text('Choose model').prop('selected', true));
                         // Update select field to show selected option
                         $modelSelect.find('option:first').prop('selected', true);
+                        */
                     }
                 }
 
@@ -205,6 +211,18 @@ jQuery(document).ready(function ($) {
                     }
                 }
                 $(this).siblings('label').find('span').text('');
+            }
+
+            // if name is Default and value is default, the input field can not be changed
+            if ($(this).attr('name') === 'name' && ($(this).val() === 'default') || ($(this).val() === 'Default')) {
+                console.log('name is default, can not be changed');
+                $(this).prop('disabled', true);
+            }
+
+            // if field name is envId and value is empty, set the first option to selected
+            if ($(this).attr('name') === 'envId' && $(this).val() === null) {
+                console.log('envId is empty, set the first option to selected');
+                $('#envId option:first').prop('selected', true);
             }
         });
 

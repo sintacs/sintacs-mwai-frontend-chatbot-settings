@@ -198,7 +198,9 @@ class SintacsMwaiFrontendChatbotSettings {
         foreach ( $this->parameter_names as $parameter_name ) {
             if ( isset( $formDataArray[ $parameter_name ] ) ) {
                 // Decode non-breaking spaces back to regular spaces
-                $extractedParameters[ $parameter_name ] = str_replace('&nbsp;', ' ', $formDataArray[ $parameter_name ]);
+                $value = str_replace('&nbsp;', ' ', $formDataArray[ $parameter_name ]);
+                // Strip slashes to prevent multiple escaping
+                $extractedParameters[ $parameter_name ] = stripslashes($value);
             } else {
                 $extractedParameters[ $parameter_name ] = false;
             }
@@ -359,6 +361,8 @@ class SintacsMwaiFrontendChatbotSettings {
                         $form_elements .= "<label class='sintacs-form-check-label' for='{$parameter_name}' id='{$parameter_name}-label'>{$label}</label></div>";
                         break;
                 default:
+                    // if name is Default and value is default, the input field can not be changed
+                    $readonly = strtolower($parameter_name) === 'default' && strtolower($value) === 'default' ? 'readonly' : '';
                     $form_elements .= "<div class='sintacs-form-floating'>";
                     $form_elements .= "<input type='text' id='{$parameter_name}' name='{$parameter_name}' value='{$value}' class='sintacs-form-control sintacs-form-control-sm' placeholder='{$label}'{$readonly}>";
                     $form_elements .= "<label for='{$parameter_name}' id='{$parameter_name}-label'>{$label} <span>{$icon}</span></label></div>";
@@ -373,6 +377,9 @@ class SintacsMwaiFrontendChatbotSettings {
 		// Return all possible parameter names
 		$settings = new SintacsMwaiFrontendChatbotSettings();
 		$parameter_names = array_keys(MWAI_CHATBOT_DEFAULT_PARAMS);
+
+		// Adds array parameter_to_show to parameter_names array at the beginning
+		$parameter_names = array_merge( $settings->parameter_to_show, $parameter_names );
 
 		// Exclude parameters in parameter_to_skip array
 		$parameter_names = array_diff($parameter_names, $settings->parameter_to_skip);

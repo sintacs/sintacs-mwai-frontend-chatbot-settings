@@ -230,8 +230,6 @@ jQuery(document).ready(function ($) {
 
             }
 
-            console.log('defaultSettings[\'envId\']: ' + defaultSettings['envId']);
-
             if(defaultSettings['envId'] === null || defaultSettings['envId'] === '' || defaultSettings['envId'] === undefined) {
 
                 $('#envId').siblings('label').find('span').text('');

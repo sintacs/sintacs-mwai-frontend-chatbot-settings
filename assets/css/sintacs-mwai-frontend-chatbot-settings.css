@@ -386,6 +386,20 @@
     justify-content: flex-start;
 }
 
+.sintacs-ai-engine-shortcode-wrap {
+    overflow: hidden;
+    max-height: 450px;
+    overflow-y: auto;
+    margin-bottom: 35px;
+}
+
+.sintacs-ai-engine-shortcode-wrap .mwai-conversation {
+    overflow: hidden;
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .sintacs-form-floating .date-input {

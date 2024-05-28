@@ -200,8 +200,8 @@ console.log($('#fullscreen').val());
                     $(this).prop('checked', userValue == '1' || userValue === true);
                 } else {
                     var textArea = document.createElement('textarea');
-                    textArea.innerHTML = userValue;
-                    userValue = textArea.value;
+                    //textArea.innerHTML = userValue;
+                    //userValue = textArea.value;
 
                     var isNumeric = /^-?\d*\.?\d+$/.test(userValue);
                     if (isNumeric) {

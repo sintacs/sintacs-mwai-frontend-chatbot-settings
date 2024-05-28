@@ -269,14 +269,56 @@ class SintacsMwaiFrontendChatbotSettings {
 
 		$form_elements = $this->generate_form_elements_from_parameters( $chatbot_id );
 
+		// if chatbot_id is not empty, execute the shortcode for the ai engine chatbot overriding the default parameters with the user settings
+		$ai_engine_chatbot_shortcode = '';
+		if ( $chatbot_id !== '' ) {
+			$user_id            = get_current_user_id();
+			$user_settings      = get_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbot_id,true );
+			// Get original parameters
+			$original_parameters = $this->get_chatbot_settings_by_chatbot_id( $chatbot_id );
+			error_log('original_parameters: ' . print_r($original_parameters, true));
+			error_log('user_settings: ' . print_r($user_settings, true));
+
+			$params_to_override = array_intersect_key( $user_settings,$this->chatbot_shortcode_override_parameters );
+
+			// Convert camelCase keys to snake_case for HTML attributes
+			$attributes = array_map( function ( $key,$value ) {
+				$snake_key = strtolower( preg_replace( '/(?<!^)[A-Z]/','_$0',$key ) );
+
+				// Check if the value is numeric and convert "1" to true, "0" to false
+				if (is_numeric($value)) {
+					$value = $value == 1 ? 'true' : ($value == 0 ? 'false' : $value);
+				}
+
+				return $snake_key . '="' . htmlentities( $value,ENT_QUOTES ) . '"';
+			},array_keys( $params_to_override ),$params_to_override );
+
+
+			error_log('attributes: ' . print_r($attributes, true));
+
+			// Join the attributes into a string
+			$attributes_string = implode( ' ',$attributes );
+
+			$ai_engine_chatbot = do_shortcode( '[mwai_chatbot id="' . $chatbot_id . '", ' . $attributes_string . ' ]' );
+			error_log('ai_engine_chatbot: ' .$ai_engine_chatbot);
+			$ai_engine_chatbot_shortcode = '<div class="sintacs-ai-engine-shortcode-wrap">' . $ai_engine_chatbot . '</div>';
+		}
+/*
+		if($original_parameters['window'] !== 1) {
+			$form_elements .= $ai_engine_chatbot_shortcode;
+		}else {
+
+		}
+*/
 		// Check if the "Save to Original" button should be shown
 		$show_save_to_original = get_option( 'sintacs_mwai_chatbot_show_save_to_original','1' );
 
-		// Form header
+		// Form header with close button
 		$form_header = '<div class="sintacs-card-header sintacs-d-flex sintacs-justify-content-between sintacs-align-items-center">
-                        <h4>Chatbot Settings</h4>
-                        <span id="name-info"></span>
-                    </div>';
+						<h4>Chatbot Settings</h4>
+						<span id="name-info"></span>
+						<button type="button" id="close-form" class="sintacs-btn sintacs-btn-sm sintacs-btn-danger sintacs-close-form">X</button>
+					</div>';
 
 		// Form body
 		$form_body = '<div class="sintacs-form-row">' . $form_elements . '</div>';
@@ -291,18 +333,20 @@ class SintacsMwaiFrontendChatbotSettings {
 		$form_footer .= '</div>';
 
 		// Form
-		$form_html = '<div id="sintacs-ai-engine-extension-form-wrapper" class="sintacs-container sintacs-mt-4">
-                    <div class="sintacs-card">
-                        ' . $form_header . '
-                        <div class="sintacs-card-body">
-                            <div id="form-success-message" style="display: none;" class="sintacs-alert sintacs-alert-success"></div>
-                            <form id="sintacs-ai-engine-extension-form" class="sintacs-needs-validation sintacs-bg-white sintacs-p-2" novalidate>
-                                ' . $form_body . '
-                                ' . $form_footer . '
-                            </form>
-                        </div>
-                    </div>
-                </div>';
+		$form_html = $ai_engine_chatbot_shortcode;
+		$form_html .= '<button type="button" id="show-form" class="sintacs-btn sintacs-btn-primary sintacs-btn-sm">' . __( 'Edit Chatbot Settings' ) . '</button>';
+		$form_html .= '<div id="sintacs-ai-engine-extension-form-wrapper" class="sintacs-container sintacs-mt-4" style="display: none;">
+						<div class="sintacs-card">
+							' . $form_header . '
+							<div class="sintacs-card-body">
+								<div id="form-success-message" style="display: none;" class="sintacs-alert sintacs-alert-success"></div>
+								<form id="sintacs-ai-engine-extension-form" class="sintacs-needs-validation sintacs-bg-white sintacs-p-2" novalidate>
+									' . $form_body . '
+									' . $form_footer . '
+								</form>
+							</div>
+						</div>
+					</div>';
 
 		return $form_html;
 	}
@@ -313,30 +357,6 @@ class SintacsMwaiFrontendChatbotSettings {
 		$user_id            = get_current_user_id();
 		$user_settings      = get_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbot_id,true );
 		$parameters_to_show = get_option( 'sintacs_mwai_chatbot_parameters_to_show',$this->parameter_to_show );
-
-		// if chatbot_id is not empty, execute the shortcode for the ai engine chatbot overriding the default parameters with the user settings
-		if ( $chatbot_id !== '' ) {
-			$params_to_override = array_intersect_key( $user_settings,$this->chatbot_shortcode_override_parameters );
-
-            // Convert camelCase keys to snake_case for HTML attributes
-			$attributes = array_map( function ( $key,$value ) {
-				$snake_key = strtolower( preg_replace( '/(?<!^)[A-Z]/','_$0',$key ) );
-
-				// Check if the value is numeric and convert "1" to true, "0" to false
-				if (is_numeric($value)) {
-					$value = $value == 1 ? 'true' : ($value == 0 ? 'false' : $value);
-				}
-
-				return $snake_key . '="' . htmlentities( $value,ENT_QUOTES ) . '"';
-			},array_keys( $params_to_override ),$params_to_override );
-
-            // Join the attributes into a string
-			$attributes_string = implode( ' ',$attributes );
-
-			$ai_engine_chatbot = do_shortcode( '[mwai_chatbot id="' . $chatbot_id . '", ' . $attributes_string . ']' );
-
-			$form_elements .= '<div class="sintacs-ai-engine-shortcode-wrap">' . $ai_engine_chatbot . '</div>';
-		}
 
 		$form_elements .= '<input type="hidden" name="botId" value="' . esc_attr( $chatbot_id ) . '" class="sintacs-form-control sintacs-form-control-sm">';
 		$form_elements .= wp_nonce_field( 'sichere_handlung','security',true,false );

@@ -399,6 +399,12 @@
     overflow-y: auto;
 }
 
+.sintacs-close-form {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

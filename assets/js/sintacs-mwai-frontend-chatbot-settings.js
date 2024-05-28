@@ -60,9 +60,14 @@ jQuery(document).ready(function ($) {
         $('#sintacs-ai-engine-extension-form').submit(function (e) {
             e.preventDefault();
 
+            // log value of input field with name window
+/*
+console.log($('#window_').val());
+console.log($('#fullscreen').val());
+*/
             // Serialize the form data before disabling the fields
             var formData = $(this).serialize();
-
+//console.log('formData: ' + formData);
             // Disable the submit button and lock the form fields
             toggleFormElements(true);
 
@@ -81,8 +86,10 @@ jQuery(document).ready(function ($) {
                         $('#sintacs-ai-engine-extension-form-wrapper').addClass('border border-success');
                         $('#form-success-message').text(response.data.message);
                         $('#form-success-message').show();
+
                         // Reload the page to take the changed settings into effect
                         location.reload();
+
                     } else {
                         $('#sintacs-ai-engine-extension-form-wrapper').addClass('border border-danger');
                         alert('Something went wrong. Please try again.');
@@ -95,6 +102,7 @@ jQuery(document).ready(function ($) {
                 complete: function () {
                     // Release the submit button and form fields regardless of success or failure
                     toggleFormElements(false);
+
                     // Fade out success notice after a few seconds
                     setTimeout(function () {
                         $('#form-success-message').fadeOut();
@@ -180,8 +188,15 @@ jQuery(document).ready(function ($) {
             let userValue = chatbotSettings[inputName];
             let defaultValue = defaultSettings[inputName];
 
+//console.log('inputName: ' + inputName + ' = ' + userValue);
+
+            if(inputName === 'window' && userValue === false) {
+                userValue = 0;
+            }
+
             if (userValue !== undefined && userValue !== false) {
                 if ($(this).attr('type') === 'checkbox') {
+//console.log('inputName: ' + inputName + ' = ' + userValue);
                     $(this).prop('checked', userValue == '1' || userValue === true);
                 } else {
                     var textArea = document.createElement('textarea');
@@ -299,6 +314,17 @@ jQuery(document).ready(function ($) {
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
     }
+    
+    // Show/Hide form functionality
+    $('#show-form').click(function () {
+        $('#sintacs-ai-engine-extension-form-wrapper').show();
+        $(this).hide();
+    });
+
+    $('#close-form').click(function () {
+        $('#sintacs-ai-engine-extension-form-wrapper').hide();
+        $('#show-form').show();
+    });
 
     waitForChatbot();
     displayTemperatureValue();

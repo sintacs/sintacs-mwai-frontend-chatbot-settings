@@ -38,6 +38,9 @@ Dirk Krölls, Sintacs
 - **Frontend Configuration**: Allows configuration of which parameters should be shown and in which order in the chatbot settings form.
 - **The blue icon**: Indicates that the setting differs from the original.
 
+### Limitations
+- **Only one** chatbot can be edited on one page. That means you can only use the shortcode once on a page/post.
+
 ## Dependencies
 - AI Engine or AI Engine Pro plugin must be active.
 

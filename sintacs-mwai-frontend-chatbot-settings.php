@@ -98,11 +98,11 @@ class SintacsMwaiFrontendChatbotSettings {
 	// Parameters that are not editable but should still be displayed in the form
 	var array $readonly_parameters = [ 'botId' ];
 
-    /*
-     * both do not work either with 1/0 or true/false
-     	//'window'               => '',
+	/*
+	 * both do not work either with 1/0 or true/false
+		 //'window'               => '',
 		//'fullscreen'           => '',
-     * */
+	 * */
 	var array $chatbot_shortcode_override_parameters = [
 		'aiName'               => '',
 		'userName'             => '',
@@ -272,44 +272,54 @@ class SintacsMwaiFrontendChatbotSettings {
 		// if chatbot_id is not empty, execute the shortcode for the ai engine chatbot overriding the default parameters with the user settings
 		$ai_engine_chatbot_shortcode = '';
 		if ( $chatbot_id !== '' ) {
-			$user_id            = get_current_user_id();
-			$user_settings      = get_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbot_id,true );
+//error_log('chatbot_id1: ' . $chatbot_id);
+			$user_id       = get_current_user_id();
+			$user_settings = get_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbot_id,true );
 			// Get original parameters
 			$original_parameters = $this->get_chatbot_settings_by_chatbot_id( $chatbot_id );
-			error_log('original_parameters: ' . print_r($original_parameters, true));
-			error_log('user_settings: ' . print_r($user_settings, true));
+			//error_log('original_parameters: ' . print_r($original_parameters, true));
 
-			$params_to_override = array_intersect_key( $user_settings,$this->chatbot_shortcode_override_parameters );
+			//error_log('user_settings: ' . print_r($user_settings, true));
+
+			// check if user settings not empty
+			if ( ! empty( $user_settings ) ) {
+				$params_to_override = array_intersect_key( $user_settings,$this->chatbot_shortcode_override_parameters );
+			} else {
+				$params_to_override = array_intersect_key( $original_parameters,$this->chatbot_shortcode_override_parameters );
+			}
+
+			//error_log('params_to_override: ' . print_r($params_to_override, true));
+
 
 			// Convert camelCase keys to snake_case for HTML attributes
 			$attributes = array_map( function ( $key,$value ) {
 				$snake_key = strtolower( preg_replace( '/(?<!^)[A-Z]/','_$0',$key ) );
 
 				// Check if the value is numeric and convert "1" to true, "0" to false
-				if (is_numeric($value)) {
-					$value = $value == 1 ? 'true' : ($value == 0 ? 'false' : $value);
+				if ( is_numeric( $value ) ) {
+					$value = $value == 1 ? 'true' : ( $value == 0 ? 'false' : $value );
 				}
 
 				return $snake_key . '="' . htmlentities( $value,ENT_QUOTES ) . '"';
 			},array_keys( $params_to_override ),$params_to_override );
 
 
-			error_log('attributes: ' . print_r($attributes, true));
+			//error_log('attributes: ' . print_r($attributes, true));
 
 			// Join the attributes into a string
 			$attributes_string = implode( ' ',$attributes );
-
-			$ai_engine_chatbot = do_shortcode( '[mwai_chatbot id="' . $chatbot_id . '", ' . $attributes_string . ' ]' );
-			error_log('ai_engine_chatbot: ' .$ai_engine_chatbot);
+			//error_log('chatbot_id2: ' . print_r($chatbot_id, true));
+			$ai_engine_chatbot = do_shortcode( '[mwai_chatbot id="' . $chatbot_id . '" ' . $attributes_string . ' ]' );
+			//error_log('ai_engine_chatbot: ' .$ai_engine_chatbot);
 			$ai_engine_chatbot_shortcode = '<div class="sintacs-ai-engine-shortcode-wrap">' . $ai_engine_chatbot . '</div>';
 		}
-/*
-		if($original_parameters['window'] !== 1) {
-			$form_elements .= $ai_engine_chatbot_shortcode;
-		}else {
+		/*
+				if($original_parameters['window'] !== 1) {
+					$form_elements .= $ai_engine_chatbot_shortcode;
+				}else {
 
-		}
-*/
+				}
+		*/
 		// Check if the "Save to Original" button should be shown
 		$show_save_to_original = get_option( 'sintacs_mwai_chatbot_show_save_to_original','1' );
 
@@ -644,18 +654,36 @@ class SintacsMwaiFrontendChatbotSettings {
 
 	public function override_chatbot_params( $params ) {
 
-		$chatbot_id = $params['botId'];
+		//error_log( 'params1: ' . print_r( $params,true ) );
+		if ( $params[0] ) {
+			preg_match( '/id="([^"]+)"/',$params[0],$matches );
 
-		if ( empty( $chatbot_id ) ) {
+			$chatbot_id = $matches[1];
+		} else {
 			return $params;
 		}
 
 		$user_id       = get_current_user_id();
 		$user_settings = get_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbot_id,true );
 
+        if(!$user_settings){
+            return $params;
+        }
+
+		//error_log( 'chatbot_id: ' . print_r( $chatbot_id,true ) );
+
+		if ( empty( $chatbot_id ) ) {
+			return $params;
+		}
+		//error_log( 'params2: ' . print_r( $params,true ) );
+
+
+		//error_log( 'user_settings: ' . print_r( $user_settings,true ) );
+
 		if ( $user_settings ) {
 			$params = array_merge( $params,$user_settings );
 		}
+		//error_log( 'params3: ' . print_r( $params,true ) );
 
 		return $params;
 	}
@@ -663,8 +691,8 @@ class SintacsMwaiFrontendChatbotSettings {
 	private function get_available_themes() {
 		global $mwai_core;
 
-		$theme_option_name = get_theme_option_name( $mwai_core );
-		$themes            = $mwai_core->get_themes();
+		//$theme_option_name = get_theme_option_name( $mwai_core );
+		$themes = $mwai_core->get_themes();
 
 		return $themes;
 	}

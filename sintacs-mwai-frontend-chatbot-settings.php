@@ -326,7 +326,7 @@ class SintacsMwaiFrontendChatbotSettings {
 		// Form header with close button
 		$form_header = '<div class="sintacs-card-header sintacs-d-flex sintacs-justify-content-between sintacs-align-items-center">
 						<h4>Chatbot Settings</h4>
-						<span id="name-info"></span>
+						<span id="name-info"></span>&nbsp;(<span id="env-info"></span>)
 						<button type="button" id="close-form" class="sintacs-btn sintacs-btn-sm sintacs-btn-danger sintacs-close-form">X</button>
 					</div>';
 
@@ -659,6 +659,8 @@ class SintacsMwaiFrontendChatbotSettings {
 			preg_match( '/id="([^"]+)"/',$params[0],$matches );
 
 			$chatbot_id = $matches[1];
+		} elseif ( $params['botId'] ) {
+			$chatbot_id = $params['botId'];
 		} else {
 			return $params;
 		}
@@ -666,9 +668,9 @@ class SintacsMwaiFrontendChatbotSettings {
 		$user_id       = get_current_user_id();
 		$user_settings = get_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbot_id,true );
 
-        if(!$user_settings){
-            return $params;
-        }
+		if ( ! $user_settings ) {
+			return $params;
+		}
 
 		//error_log( 'chatbot_id: ' . print_r( $chatbot_id,true ) );
 
@@ -683,6 +685,7 @@ class SintacsMwaiFrontendChatbotSettings {
 		if ( $user_settings ) {
 			$params = array_merge( $params,$user_settings );
 		}
+
 		//error_log( 'params3: ' . print_r( $params,true ) );
 
 		return $params;

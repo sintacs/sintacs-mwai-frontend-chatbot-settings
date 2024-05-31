@@ -138,6 +138,15 @@ console.log($('#fullscreen').val());
                     var chatbotName = !response.data['chatbot_settings']['name'] ? response.data['default_settings']['name'] : response.data['chatbot_settings']['name'];
                     $('#name-info').text(chatbotName);
                     console.log('name: ' + chatbotName);
+                    var envid = !response.data['chatbot_settings']['envId'] ? response.data['default_settings']['envId'] : response.data['chatbot_settings']['envId'];
+                    // get the option from the select envId with the value envid
+                    var envname = $('#envId option[value="' + envid + '"]').text();
+
+
+                    console.log('env: '+ envid);
+                    $('#env-info').text(envname);
+                    console.log('env: ' + envname);
+
 
                     // Set current model
                     var currentModel = response.data['chatbot_settings']['model'];

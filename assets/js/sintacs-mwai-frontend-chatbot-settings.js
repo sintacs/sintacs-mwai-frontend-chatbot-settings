@@ -139,14 +139,21 @@ console.log($('#fullscreen').val());
                     $('#name-info').text(chatbotName);
                     console.log('name: ' + chatbotName);
                     var envid = !response.data['chatbot_settings']['envId'] ? response.data['default_settings']['envId'] : response.data['chatbot_settings']['envId'];
-                    // get the option from the select envId with the value envid
-                    var envname = $('#envId option[value="' + envid + '"]').text();
 
 
-                    console.log('env: '+ envid);
-                    $('#env-info').text(envname);
-                    console.log('env: ' + envname);
+                    if(envid !== undefined) {
+                        // get the option from the select envId with the value envid
+                        var envname = $('#envId option[value="' + envid + '"]').text();
 
+                        console.log('envid: ' + envid);
+                        $('#env-info').text(envname);
+                        console.log('envname: ' + envname);
+                    }else{
+                        // get the text from the first option
+                        var envname = $('#envId option:first').text();
+                        $('#env-info').text(envname);
+                        console.log('envname: ' + envname);
+                    }
 
                     // Set current model
                     var currentModel = response.data['chatbot_settings']['model'];
@@ -197,8 +204,6 @@ console.log($('#fullscreen').val());
             let userValue = chatbotSettings[inputName];
             let defaultValue = defaultSettings[inputName];
 
-//console.log('inputName: ' + inputName + ' = ' + userValue);
-
             if(inputName === 'window' && userValue === false) {
                 userValue = 0;
             }
@@ -237,8 +242,15 @@ console.log($('#fullscreen').val());
                         $(this).val(defaultValue);
                     }
                 }
+
                 $(this).siblings('label').find('span').text('');
             }
+
+            if(defaultValue === undefined && userValue !== undefined) {
+                console.log('defaultValue is undefined');
+                $(this).siblings('label').find('span').text('🔵').attr('title', 'Default:');
+            }
+
 
             // if name is Default and value is default, the input field can not be changed
             if ($(this).attr('name') === 'name' && ($(this).val() === 'default') || ($(this).val() === 'Default')) {
@@ -254,9 +266,16 @@ console.log($('#fullscreen').val());
 
             }
 
-            if(defaultSettings['envId'] === null || defaultSettings['envId'] === '' || defaultSettings['envId'] === undefined) {
+            if(inputName === 'envId') {
 
-                $('#envId').siblings('label').find('span').text('');
+                if (defaultValue === null || defaultValue === '' || defaultValue === undefined) {
+
+                    if (userValue == '' || userValue === undefined) {
+                        $('#envId').siblings('label').find('span').text('');
+                    } else {
+                        $(this).siblings('label').find('span').text('🔵').attr('title', 'Default:');
+                    }
+                }
             }
 
         });

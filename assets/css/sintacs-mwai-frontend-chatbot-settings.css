@@ -64,6 +64,12 @@
     padding: 1.25rem;
 }
 
+.sintacs-card-footer {
+    padding: 0.75rem 1.25rem;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
+}
+
 .sintacs-input-group, .sintacs-mb-3 {
     display: flex;
     align-items: stretch;

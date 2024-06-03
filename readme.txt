@@ -5,7 +5,7 @@ This WordPress plugin allows users to change chatbot parameters directly from th
 It allows you to edit existing chatbot settings in the frontend and save settings per user with the option to update the original chatbot settings. It requires having the chatbot previously created.
 
 ## Version
-1.1
+1.2
 
 ## Author
 Dirk Krölls, Sintacs
@@ -18,7 +18,7 @@ Dirk Krölls, Sintacs
 ## Admin page settings:
 - Navigate to the 'AI Engine Frontend Chatbot Settings' menu in your WordPress admin panel.
 - Use the 'Allowed Roles' setting to specify which user roles are permitted to modify chatbot settings. This setting ensures that only authorized users can make changes to the chatbot configurations.
-- Use the 'Show Save to Original' Button to save the chatbot user settings to the original chatbot (override settings).
+- Use the 'Show Save to Original' Button to save the chatbot user settings to the original chatbot overwrite settings).
 - Set the 'Parameters to Show' setting to specify which parameters should be shown in the chatbot settings form. This setting ensures that only the selected parameters are shown in the form.
 - Use Drag and Drop to reorder the 'Parameters to Show'.
 
@@ -46,6 +46,19 @@ Dirk Krölls, Sintacs
 
 ## Changelog
 
+### 1.2
+New
+Frontend
+- Chatbot name and environment is now displayed in the form header
+- If chatbot_id set via shortcode, the chat is displayed above the form by executing the shortcode [mwai_chatbot] by adding the attribute id to chatbot_id and the attributes aiName, userName, themeId, textInputPlaceholder, textSend, textClear, textInputMaxLength, textCompliance to reflect the user settings in the chatbot.
+- Button to show/hide the edit form
+- Environment to the chatbot settings header
+- Select option "Default" for the environment setting to reflect the backend options
+- Form footer with hint for the blue dot icon
+
+Admin
+- Function to choose a chatbot and copy the shortcode
+
 ### 1.1
 ## New
 Admin
@@ -65,7 +78,7 @@ Frontend
 - Added admin page for role-based access control.
 
 ## Support
-For support, please contact the plugin author at `info@sintacs.com`.
+For support, please contact the plugin author at `info@sintacs.de`.
 
 ## License
 This plugin is licensed under the GPL-2.0+ license.

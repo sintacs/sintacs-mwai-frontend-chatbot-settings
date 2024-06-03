@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sintacs Mwai Frontend Chatbot Settings
  * Description: Allows users to change chatbot parameters on the frontend.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Dirk Krölls, Sintacs
  */
 
@@ -103,7 +103,7 @@ class SintacsMwaiFrontendChatbotSettings {
 		 //'window'               => '',
 		//'fullscreen'           => '',
 	 * */
-	var array $chatbot_shortcode_override_parameters = [
+	var array $chatbot_shortcode_overwrite_parameters = [
 		'aiName'               => '',
 		'userName'             => '',
 		'themeId'              => '',
@@ -133,8 +133,8 @@ class SintacsMwaiFrontendChatbotSettings {
 
 
 		// AI Engine Filter
-		// This filter is used to override the default parameters for the chatbot
-		add_filter( 'mwai_chatbot_params',array( $this,'override_chatbot_params' ),10,1 );
+		// This filter is used to overwrite the default parameters for the chatbot
+		add_filter( 'mwai_chatbot_params',array( $this,'overwrite_chatbot_params' ),10,1 );
 
 		// Register the AJAX actions for get_available_models
 		add_action( 'wp_ajax_get_available_models',array( $this,'ajax_get_available_models' ) );
@@ -283,12 +283,12 @@ class SintacsMwaiFrontendChatbotSettings {
 
 			// check if user settings not empty
 			if ( ! empty( $user_settings ) ) {
-				$params_to_override = array_intersect_key( $user_settings,$this->chatbot_shortcode_override_parameters );
+				$params_to_overwrite = array_intersect_key( $user_settings,$this->chatbot_shortcode_overwrite_parameters );
 			} else {
-				$params_to_override = array_intersect_key( $original_parameters,$this->chatbot_shortcode_override_parameters );
+				$params_to_overwrite = array_intersect_key( $original_parameters,$this->chatbot_shortcode_overwrite_parameters );
 			}
 
-			//error_log('params_to_override: ' . print_r($params_to_override, true));
+			//error_log('params_to_overwrite: ' . print_r($params_to_overwrite, true));
 
 
 			// Convert camelCase keys to snake_case for HTML attributes
@@ -301,7 +301,7 @@ class SintacsMwaiFrontendChatbotSettings {
 				}
 
 				return $snake_key . '="' . htmlentities( $value,ENT_QUOTES ) . '"';
-			},array_keys( $params_to_override ),$params_to_override );
+			},array_keys( $params_to_overwrite ),$params_to_overwrite );
 
 
 			//error_log('attributes: ' . print_r($attributes, true));
@@ -354,6 +354,14 @@ class SintacsMwaiFrontendChatbotSettings {
 									' . $form_body . '
 									' . $form_footer . '
 								</form>
+							</div>
+							<div class="sintacs-card-footer">
+							    <ul>
+							        <li>The blue dot icon 🔵 indicates that the value of the field differs from the original value.</li>
+							        <li>The "Save" button saves the settings to the user meta fields and overwrites the original values while chatting with this bot.</li>
+                                    <li>The "Save to Original" button saves the settings to the original values.</li>
+                                    <li>The "Reset to Original" button resets the field values to the original values.</li>                                                                        
+							    </ul>
 							</div>
 						</div>
 					</div>';
@@ -415,8 +423,11 @@ class SintacsMwaiFrontendChatbotSettings {
 					$environments  = $this->get_all_mwai_options( 'ai_envs' );
 					$form_elements .= "<div class='sintacs-form-floating'>";
 					$form_elements .= "<select id='envId' name='envId' class='sintacs-form-select sintacs-form-select-sm'{$readonly}>";
-					foreach ( $environments as $env ) {
-						$selected      = $value === $env['id'] ? 'selected' : '';
+
+						$form_elements .= "<option value='' selected>Default</option>";
+
+					foreach ($environments as $env) {
+						$selected = $value === $env['id'] ? 'selected' : '';
 						$form_elements .= "<option value='{$env['id']}' {$selected}>{$env['name']}</option>";
 					}
 					$form_elements .= "</select>";
@@ -652,7 +663,7 @@ class SintacsMwaiFrontendChatbotSettings {
 		return preg_replace( '/([a-z])([A-Z])/','$1 $2',$string );
 	}
 
-	public function override_chatbot_params( $params ) {
+	public function overwrite_chatbot_params( $params ) {
 
 		//error_log( 'params1: ' . print_r( $params,true ) );
 		if ( $params[0] ) {
@@ -682,13 +693,9 @@ class SintacsMwaiFrontendChatbotSettings {
 
 		//error_log( 'user_settings: ' . print_r( $user_settings,true ) );
 
-		if ( $user_settings ) {
-			$params = array_merge( $params,$user_settings );
-		}
-
 		//error_log( 'params3: ' . print_r( $params,true ) );
 
-		return $params;
+		return array_merge( $params,$user_settings );
 	}
 
 	private function get_available_themes() {

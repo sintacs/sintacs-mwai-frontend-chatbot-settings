@@ -31,12 +31,12 @@ jQuery(document).ready(function ($) {
                 updateModelsDropdown();
 
                 // Event listener for the textarea focus event
-                $('#instructions').on('focus', function () {
+                $('#instructions, #startSentence').on('focus', function () {
                     adjustTextareaHeight(this);
                 });
 
                 // Optionally, adjust the height on input as well
-                $('#instructions').on('input', function () {
+                $('#instructions, #startSentence').on('input', function () {
                     adjustTextareaHeight(this);
                 });
 
@@ -140,19 +140,24 @@ console.log($('#fullscreen').val());
                     console.log('name: ' + chatbotName);
                     var envid = !response.data['chatbot_settings']['envId'] ? response.data['default_settings']['envId'] : response.data['chatbot_settings']['envId'];
 
+                    //console.log('envid: ' + envid);
 
                     if(envid !== undefined) {
                         // get the option from the select envId with the value envid
                         var envname = $('#envId option[value="' + envid + '"]').text();
 
-                        console.log('envid: ' + envid);
+                       // console.log('envid: ' + envid);
                         $('#env-info').text(envname);
-                        console.log('envname: ' + envname);
+                       // console.log('envname: ' + envname);
                     }else{
                         // get the text from the first option
                         var envname = $('#envId option:first').text();
                         $('#env-info').text(envname);
                         console.log('envname: ' + envname);
+
+                        if(!envname){
+                            $('#env-info').text('Default');
+                        }
                     }
 
                     // Set current model

@@ -248,12 +248,20 @@ class SintacsMwaiFrontendChatbotSettings {
 	public function form_shortcode( $atts ) {
 		$atts = shortcode_atts( array(
 			'chatbot_id' => '',
+			'allow_users' => '',
 		),$atts,'ai_engine_extension_form' );
 
 		$chatbot_id = sanitize_text_field( $atts['chatbot_id'] );
 
 		if ( ! $this->current_user_has_access() ) {
 			return 'You are not allowed to access this feature.';
+		}
+
+		if ( ! empty( $atts['allow_users'] ) ) {
+			$allow_users = preg_split( '/\s*[,;\s]\s*/', sanitize_text_field( $atts['allow_users'] ) );
+			if ( ! is_user_logged_in() || ! in_array( wp_get_current_user()->user_email, $allow_users ) ) {
+				return 'You are not allowed to access this feature.';
+			}
 		}
 
 		if ( ! $this->is_ai_engine_pro_active() ) {

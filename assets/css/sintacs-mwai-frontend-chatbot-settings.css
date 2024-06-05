@@ -169,8 +169,8 @@
     -webkit-appearance: none;
     width: 1.4rem;
     height: 1.4rem;
-    background-color: #007bff;
-    border: 1px solid #007bff;
+    background-color: #00ff87;
+    border: 1px solid #01aa13;
     border-radius: 50%;
     cursor: pointer;
     transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
@@ -179,8 +179,8 @@
 .sintacs-form-range::-moz-range-thumb {
     width: 1.4rem;
     height: 1.4rem;
-    background-color: #007bff;
-    border: 1px solid #007bff;
+    background-color: #00ff87;
+    border: 1px solid #01aa13;
     border-radius: 50%;
     cursor: pointer;
     transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
@@ -189,8 +189,8 @@
 .sintacs-form-range::-ms-thumb {
     width: 1.4rem;
     height: 1.4rem;
-    background-color: #007bff;
-    border: 1px solid #007bff;
+    background-color: #00ff87;
+    border: 1px solid #01aa13;
     border-radius: 50%;
     cursor: pointer;
     transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
@@ -198,9 +198,9 @@
 
 .sintacs-form-range:focus {
     background-color: #e2e6ea;
-    border-color: #80bdff;
+    border-color: #00ff87;
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    box-shadow: 0 0 0 0.2rem rgb(0, 255, 135);
 }
 
 .sintacs-form-range::-webkit-slider-runnable-track {

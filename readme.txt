@@ -5,7 +5,7 @@ This WordPress plugin allows users to change chatbot parameters directly from th
 It allows you to edit existing chatbot settings in the frontend and save settings per user with the option to update the original chatbot settings. It requires having the chatbot previously created.
 
 ## Version
-1.2
+1.2.1
 
 ## Author
 Dirk Krölls, Sintacs
@@ -45,6 +45,17 @@ Dirk Krölls, Sintacs
 - AI Engine or AI Engine Pro plugin must be active.
 
 ## Changelog
+
+### 1.2.1
+Fix
+- Saving Parameters: none visible settings where saved with value 'false'
+
+Changes
+- Temperature range slider color to green to avoid confusing it with the blue dot indicator
+- Parameter "Start Sentence" is now a textarea instead of input text
+
+Added
+- Form Footer Info Text can now be edited and disabled on the admin settings page
 
 ### 1.2
 New

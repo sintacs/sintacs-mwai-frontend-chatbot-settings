@@ -218,40 +218,36 @@ class SintacsMwaiFrontendChatbotSettings {
 	public function save_parameters() {
 		if ( ! $this->current_user_has_access() ) {
 			wp_send_json_error( [ 'message' => 'You are not allowed to change these settings.' ] );
-
 			return;
 		}
 
-		parse_str( nl2br( $_POST['formData'] ),$formDataArray );
+		parse_str( nl2br( $_POST['formData'] ), $formDataArray );
 
-		if ( ! isset( $formDataArray['security'] ) || ! wp_verify_nonce( $formDataArray['security'],'sichere_handlung' ) ) {
+		if ( ! isset( $formDataArray['security'] ) || ! wp_verify_nonce( $formDataArray['security'], 'sichere_handlung' ) ) {
 			wp_send_json_error( [ 'message' => 'Security check failed.' ] );
-
 			return;
 		}
 
 		$extractedParameters = [];
-		foreach ( $this->parameter_names as $parameter_name ) {
+		$parameters_to_show = get_option( 'sintacs_mwai_chatbot_parameters_to_show', $this->parameter_to_show );
+
+		foreach ( $parameters_to_show as $parameter_name ) {
 			if ( isset( $formDataArray[ $parameter_name ] ) ) {
-				// Decode non-breaking spaces back to regular spaces
-				$value = str_replace( '&nbsp;',' ',$formDataArray[ $parameter_name ] );
-				// Strip slashes to prevent multiple escaping
+				$value = str_replace( '&nbsp;', ' ', $formDataArray[ $parameter_name ] );
 				$extractedParameters[ $parameter_name ] = stripslashes( $value );
-			} else {
-				$extractedParameters[ $parameter_name ] = false;
 			}
 		}
 
 		$chatbot_id = sanitize_text_field( $_POST['chatbotId'] );
 		$user_id    = get_current_user_id();
-		update_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbot_id,$extractedParameters );
+		update_user_meta( $user_id, 'sintacs_mwai_chatbot_settings_' . $chatbot_id, $extractedParameters );
 
 		wp_send_json_success( [ 'message' => 'Chatbot settings updated successfully. Reloading the page to take effect.' ] );
 	}
 
 	public function form_shortcode( $atts ) {
 		$atts = shortcode_atts( array(
-			'chatbot_id' => ''
+			'chatbot_id' => '',
 		),$atts,'ai_engine_extension_form' );
 
 		$chatbot_id = sanitize_text_field( $atts['chatbot_id'] );
@@ -272,14 +268,11 @@ class SintacsMwaiFrontendChatbotSettings {
 		// if chatbot_id is not empty, execute the shortcode for the ai engine chatbot overriding the default parameters with the user settings
 		$ai_engine_chatbot_shortcode = '';
 		if ( $chatbot_id !== '' ) {
-//error_log('chatbot_id1: ' . $chatbot_id);
+
 			$user_id       = get_current_user_id();
 			$user_settings = get_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbot_id,true );
 			// Get original parameters
 			$original_parameters = $this->get_chatbot_settings_by_chatbot_id( $chatbot_id );
-			//error_log('original_parameters: ' . print_r($original_parameters, true));
-
-			//error_log('user_settings: ' . print_r($user_settings, true));
 
 			// check if user settings not empty
 			if ( ! empty( $user_settings ) ) {
@@ -287,9 +280,6 @@ class SintacsMwaiFrontendChatbotSettings {
 			} else {
 				$params_to_overwrite = array_intersect_key( $original_parameters,$this->chatbot_shortcode_overwrite_parameters );
 			}
-
-			//error_log('params_to_overwrite: ' . print_r($params_to_overwrite, true));
-
 
 			// Convert camelCase keys to snake_case for HTML attributes
 			$attributes = array_map( function ( $key,$value ) {
@@ -303,30 +293,19 @@ class SintacsMwaiFrontendChatbotSettings {
 				return $snake_key . '="' . htmlentities( $value,ENT_QUOTES ) . '"';
 			},array_keys( $params_to_overwrite ),$params_to_overwrite );
 
-
-			//error_log('attributes: ' . print_r($attributes, true));
-
 			// Join the attributes into a string
 			$attributes_string = implode( ' ',$attributes );
-			//error_log('chatbot_id2: ' . print_r($chatbot_id, true));
 			$ai_engine_chatbot = do_shortcode( '[mwai_chatbot id="' . $chatbot_id . '" ' . $attributes_string . ' ]' );
-			//error_log('ai_engine_chatbot: ' .$ai_engine_chatbot);
 			$ai_engine_chatbot_shortcode = '<div class="sintacs-ai-engine-shortcode-wrap">' . $ai_engine_chatbot . '</div>';
 		}
-		/*
-				if($original_parameters['window'] !== 1) {
-					$form_elements .= $ai_engine_chatbot_shortcode;
-				}else {
 
-				}
-		*/
 		// Check if the "Save to Original" button should be shown
 		$show_save_to_original = get_option( 'sintacs_mwai_chatbot_show_save_to_original','1' );
 
 		// Form header with close button
 		$form_header = '<div class="sintacs-card-header sintacs-d-flex sintacs-justify-content-between sintacs-align-items-center">
 						<h4>Chatbot Settings</h4>
-						<span id="name-info"></span>&nbsp;(<span id="env-info"></span>)
+						Chatbot: <strong><span id="name-info"></span></strong> - Environment:&nbsp;<strong><span id="env-info"></span></strong>
 						<button type="button" id="close-form" class="sintacs-btn sintacs-btn-sm sintacs-btn-danger sintacs-close-form">X</button>
 					</div>';
 
@@ -342,6 +321,10 @@ class SintacsMwaiFrontendChatbotSettings {
 		$form_footer .= '<button type="button" id="reset-to-default" class="sintacs-btn sintacs-btn-warning sintacs-btn-sm">' . __( 'Reset to Original' ) . '</button>';
 		$form_footer .= '</div>';
 
+		if ( get_option('sintacs_mwai_chatbot_show_footer_info', '1') === '1' ) {
+			$form_footer_info = '<div class="sintacs-card-footer">' . wp_kses_post(get_option('sintacs_mwai_chatbot_footer_info_text', 'Default footer info text.')) . '</div>';
+		}
+
 		// Form
 		$form_html = $ai_engine_chatbot_shortcode;
 		$form_html .= '<button type="button" id="show-form" class="sintacs-btn sintacs-btn-primary sintacs-btn-sm">' . __( 'Edit Chatbot Settings' ) . '</button>';
@@ -355,14 +338,7 @@ class SintacsMwaiFrontendChatbotSettings {
 									' . $form_footer . '
 								</form>
 							</div>
-							<div class="sintacs-card-footer">
-							    <ul>
-							        <li>The blue dot icon 🔵 indicates that the value of the field differs from the original value.</li>
-							        <li>The "Save" button saves the settings to the user meta fields and overwrites the original values while chatting with this bot.</li>
-                                    <li>The "Save to Original" button saves the settings to the original values.</li>
-                                    <li>The "Reset to Original" button resets the field values to the original values.</li>                                                                        
-							    </ul>
-							</div>
+                            ' . $form_footer_info . '
 						</div>
 					</div>';
 
@@ -404,6 +380,7 @@ class SintacsMwaiFrontendChatbotSettings {
 					break;
 				case 'instructions':
 				case 'context':
+                case 'startSentence':
 					$form_elements .= "<div class='sintacs-form-floating'>";
 					$form_elements .= "<textarea id='{$parameter_name}' name='{$parameter_name}' class='sintacs-form-control sintacs-form-control-sm' placeholder='{$label}'{$readonly}>{$value}</textarea>";
 					$form_elements .= "<label for='{$parameter_name}' id='{$parameter_name}-label'>{$label} <span>{$icon}</span></label></div>";
@@ -665,7 +642,6 @@ class SintacsMwaiFrontendChatbotSettings {
 
 	public function overwrite_chatbot_params( $params ) {
 
-		//error_log( 'params1: ' . print_r( $params,true ) );
 		if ( $params[0] ) {
 			preg_match( '/id="([^"]+)"/',$params[0],$matches );
 
@@ -683,17 +659,9 @@ class SintacsMwaiFrontendChatbotSettings {
 			return $params;
 		}
 
-		//error_log( 'chatbot_id: ' . print_r( $chatbot_id,true ) );
-
 		if ( empty( $chatbot_id ) ) {
 			return $params;
 		}
-		//error_log( 'params2: ' . print_r( $params,true ) );
-
-
-		//error_log( 'user_settings: ' . print_r( $user_settings,true ) );
-
-		//error_log( 'params3: ' . print_r( $params,true ) );
 
 		return array_merge( $params,$user_settings );
 	}

@@ -136,6 +136,16 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 			'default' => array()
 		));
 
+		register_setting('ai_engine_frontend', 'sintacs_mwai_chatbot_show_footer_info', array(
+			'sanitize_callback' => 'sanitize_text_field',
+			'default' => '1'
+		));
+
+		register_setting('ai_engine_frontend', 'sintacs_mwai_chatbot_footer_info_text', array(
+			'sanitize_callback' => 'wp_kses_post',
+			'default' => 'Default footer info text.'
+		));
+
 		add_settings_section(
 			'ai_engine_frontend_section',
 			__('AI Engine Frontend Chatbot Settings', 'textdomain'),
@@ -175,7 +185,21 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 			'ai_engine_frontend_section'
 		);
 
+		add_settings_field(
+			'sintacs_mwai_chatbot_show_footer_info',
+			__('Show Footer Info', 'textdomain'),
+			array($this, 'show_footer_info_field_render'),
+			'ai_engine_frontend',
+			'ai_engine_frontend_section'
+		);
 
+		add_settings_field(
+			'sintacs_mwai_chatbot_footer_info_text',
+			__('Footer Info Text', 'textdomain'),
+			array($this, 'footer_info_text_field_render'),
+			'ai_engine_frontend',
+			'ai_engine_frontend_section'
+		);
 	}
 
 	public function allowed_roles_field_render() {
@@ -260,6 +284,26 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 		wp_enqueue_script( 'sintacs-admin-js',plugin_dir_url( __FILE__ ) . 'assets/js/admin.js',array( 'jquery' ),null,true );
 		wp_enqueue_style('sintacs-admin-css', plugin_dir_url(__FILE__) . 'assets/css/admin.css');
 	}
+
+	public function show_footer_info_field_render() {
+		$option = get_option('sintacs_mwai_chatbot_show_footer_info', '1');
+		?>
+		<input type="checkbox" name="sintacs_mwai_chatbot_show_footer_info" value="1" <?php checked('1', $option); ?> />
+		<label for="sintacs_mwai_chatbot_show_footer_info"><?php _e('Show the footer info on the frontend', 'textdomain'); ?></label>
+		<?php
+	}
+
+	public function footer_info_text_field_render() {
+		$option = get_option('sintacs_mwai_chatbot_footer_info_text', 'Default footer info text.');
+		wp_editor($option, 'sintacs_mwai_chatbot_footer_info_text', array(
+			'textarea_name' => 'sintacs_mwai_chatbot_footer_info_text',
+			'textarea_rows' => 10,
+			'media_buttons' => false,
+			'teeny' => true,
+			'quicktags' => false,
+		));
+	}
 }
 
 new SintacsMwaiFrontendChatbotSettingsAdmin();
+

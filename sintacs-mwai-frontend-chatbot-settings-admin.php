@@ -301,7 +301,7 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 	}
 
 	public function footer_info_text_field_render() {
-		$option = get_option( 'sintacs_mwai_chatbot_footer_info_text','Default footer info text.' );
+		$option = get_option( 'sintacs_mwai_chatbot_footer_info_text',$this->default_footer_info_text );
 		wp_editor( $option,'sintacs_mwai_chatbot_footer_info_text',array(
 			'textarea_name' => 'sintacs_mwai_chatbot_footer_info_text',
 			'textarea_rows' => 10,
@@ -313,5 +313,3 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 }
 
 new SintacsMwaiFrontendChatbotSettingsAdmin();
-
-

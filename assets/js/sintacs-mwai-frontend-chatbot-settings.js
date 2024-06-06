@@ -1,4 +1,8 @@
 jQuery(document).ready(function ($) {
+
+    initialFormData = $('#sintacs-ai-engine-extension-form').serialize();
+    sintacsMwaiAiExtensionFormChanged = false;
+
     chatbotId = $('#sintacs-ai-engine-extension-form input[name="botId"]').val();
 
     function waitForChatbot() {
@@ -31,12 +35,12 @@ jQuery(document).ready(function ($) {
                 updateModelsDropdown();
 
                 // Event listener for the textarea focus event
-                $('#instructions, #startSentence').on('focus', function () {
+                $('#sintacs-ai-engine-extension-form textarea').on('focus', function () {
                     adjustTextareaHeight(this);
                 });
 
                 // Optionally, adjust the height on input as well
-                $('#instructions, #startSentence').on('input', function () {
+                $('#sintacs-ai-engine-extension-form textarea').on('input', function () {
                     adjustTextareaHeight(this);
                 });
 
@@ -60,16 +64,14 @@ jQuery(document).ready(function ($) {
         $('#sintacs-ai-engine-extension-form').submit(function (e) {
             e.preventDefault();
 
-            // log value of input field with name window
-/*
-console.log($('#window_').val());
-console.log($('#fullscreen').val());
-*/
             // Serialize the form data before disabling the fields
             var formData = $(this).serialize();
-//console.log('formData: ' + formData);
+
             // Disable the submit button and lock the form fields
             toggleFormElements(true);
+
+            // Set formChanged to false to prevent beforeunload warning
+            sintacsMwaiAiExtensionFormChanged = false;
 
             $.ajax({
                 type: "POST",
@@ -87,8 +89,11 @@ console.log($('#fullscreen').val());
                         $('#form-success-message').text(response.data.message);
                         $('#form-success-message').show();
 
+                        // Temporarily remove the beforeunload event listener
+                        window.removeEventListener('beforeunload', beforeUnloadHandler);
+
                         // Reload the page to take the changed settings into effect
-                        location.reload();
+                        window.location.href = window.location.href;
 
                     } else {
                         $('#sintacs-ai-engine-extension-form-wrapper').addClass('border border-danger');
@@ -134,62 +139,30 @@ console.log($('#fullscreen').val());
                     });
 
                     // Set chatbot name
-                    // if chatbot_settings name is empty, get it from the default settings
                     var chatbotName = !response.data['chatbot_settings']['name'] ? response.data['default_settings']['name'] : response.data['chatbot_settings']['name'];
                     $('#name-info').text(chatbotName);
-                    console.log('name: ' + chatbotName);
-                    var envid = !response.data['chatbot_settings']['envId'] ? response.data['default_settings']['envId'] : response.data['chatbot_settings']['envId'];
 
-                    //console.log('envid: ' + envid);
-
-                    if(envid !== undefined) {
-                        // get the option from the select envId with the value envid
-                        var envname = $('#envId option[value="' + envid + '"]').text();
-
-                       // console.log('envid: ' + envid);
-                        $('#env-info').text(envname);
-                       // console.log('envname: ' + envname);
-                    }else{
-                        // get the text from the first option
-                        var envname = $('#envId option:first').text();
-                        $('#env-info').text(envname);
-                        console.log('envname: ' + envname);
-
-                        if(!envname){
-                            $('#env-info').text('Default');
-                        }
-                    }
+                    // Always fetch and display environment info
+                    var envname = response.data['env_name'] || 'Default';
+                    $('#env-info').text(envname);
 
                     // Set current model
                     var currentModel = response.data['chatbot_settings']['model'];
-                    // check if currentModel is in the list of available models
-                    var modelFound = false;
-                    models.forEach(function (model) {
-                        if (model.model === currentModel) {
-                            modelFound = true;
-                        }
+                    var modelFound = models.some(function (model) {
+                        return model.model === currentModel;
                     });
 
                     if (currentModel && modelFound) {
                         $('#model option[value="' + currentModel + '"]').attr('selected', 'selected');
-                    }
-
-                    if (!modelFound) {
-                        // set the first option as selected
+                    } else {
                         $('#model option:first').prop('selected', true);
-
-                        /*
-                        // No model selected -> choose model
-                        $modelSelect.prepend($('<option></option>').attr('value', '').text('Choose model').prop('selected', true));
-                        // Update select field to show selected option
-                        $modelSelect.find('option:first').prop('selected', true);
-                        */
                     }
                 }
 
                 if (response.success && response.data['default_settings']) {
                     console.log('Chatbot settings received. Updating form fields...');
                     updateFormFieldsFromChatbotSettings(response.data['chatbot_settings'], response.data['default_settings']);
+                    initialFormData = $('#sintacs-ai-engine-extension-form').serialize();
                 }
             }
         });
@@ -209,18 +182,14 @@ console.log($('#fullscreen').val());
             let userValue = chatbotSettings[inputName];
             let defaultValue = defaultSettings[inputName];
 
-            if(inputName === 'window' && userValue === false) {
+            if (inputName === 'window' && userValue === false) {
                 userValue = 0;
             }
 
             if (userValue !== undefined && userValue !== false) {
                 if ($(this).attr('type') === 'checkbox') {
-//console.log('inputName: ' + inputName + ' = ' + userValue);
                     $(this).prop('checked', userValue == '1' || userValue === true);
                 } else {
-                    var textArea = document.createElement('textarea');
-                    //textArea.innerHTML = userValue;
-                    //userValue = textArea.value;
 
                     var isNumeric = /^-?\d*\.?\d+$/.test(userValue);
                     if (isNumeric) {
@@ -251,11 +220,9 @@ console.log($('#fullscreen').val());
                 $(this).siblings('label').find('span').text('');
             }
 
-            if(defaultValue === undefined && userValue !== undefined) {
-                console.log('defaultValue is undefined');
+            if (defaultValue === undefined && userValue !== undefined) {
                 $(this).siblings('label').find('span').text('🔵').attr('title', 'Default:');
             }
-
 
             // if name is Default and value is default, the input field can not be changed
             if ($(this).attr('name') === 'name' && ($(this).val() === 'default') || ($(this).val() === 'Default')) {
@@ -268,13 +235,10 @@ console.log($('#fullscreen').val());
             if ($(this).attr('name') === 'envId' && $(this).val() === null) {
                 console.log('envId is empty, set the first option to selected');
                 $('#envId option:first').prop('selected', true);
-
             }
 
-            if(inputName === 'envId') {
-
+            if (inputName === 'envId') {
                 if (defaultValue === null || defaultValue === '' || defaultValue === undefined) {
-
                     if (userValue == '' || userValue === undefined) {
                         $('#envId').siblings('label').find('span').text('');
                     } else {
@@ -282,11 +246,12 @@ console.log($('#fullscreen').val());
                     }
                 }
             }
-
         });
 
         // Display temperature value
         displayTemperatureValue();
+
+
     }
 
     function encodeTrailingSpaces(value) {
@@ -309,6 +274,7 @@ console.log($('#fullscreen').val());
             },
             success: function (response) {
                 alert(response.data.message);
+
             }
         });
     });
@@ -324,10 +290,12 @@ console.log($('#fullscreen').val());
             success: function (response) {
                 if (response.success) {
                     updateFormFieldsFromChatbotSettings(response.data.default_settings, response.data.user_settings);
+                    sintacsMwaiAiExtensionFormChanged = $('#sintacs-ai-engine-extension-form').serialize() !== initialFormData;
                     alert('Default settings loaded but not saved.');
                 } else {
                     alert('Failed to load default settings.');
                 }
+
             }
         });
     });
@@ -347,7 +315,7 @@ console.log($('#fullscreen').val());
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
     }
-    
+
     // Show/Hide form functionality
     $('#show-form').click(function () {
         $('#sintacs-ai-engine-extension-form-wrapper').show();
@@ -358,6 +326,22 @@ console.log($('#fullscreen').val());
         $('#sintacs-ai-engine-extension-form-wrapper').hide();
         $('#show-form').show();
     });
+
+    // Track form changes
+    $('#sintacs-ai-engine-extension-form').on('input', function () {
+        sintacsMwaiAiExtensionFormChanged = $('#sintacs-ai-engine-extension-form').serialize() !== initialFormData;
+    });
+
+    // Warn the user if they try to leave the page with unsaved changes
+    function beforeUnloadHandler(e) {
+        if (sintacsMwaiAiExtensionFormChanged) {
+            const confirmationMessage = 'You have unsaved changes. Are you sure you want to leave?';
+            e.returnValue = confirmationMessage; // Standard for most browsers
+            return confirmationMessage; // For some older browsers
+        }
+    }
+
+    window.addEventListener('beforeunload', beforeUnloadHandler);
 
     waitForChatbot();
     displayTemperatureValue();

@@ -144,7 +144,7 @@
     padding-left: 12px;
     padding-top: 19px;
     border: 1px solid #8f8f9d;
-    border-radius: 0px;
+    border-radius: 0;
 }
 
 .temperature label {
@@ -177,8 +177,8 @@
 }
 
 .sintacs-form-range::-moz-range-thumb {
-    width: 1.4rem;
-    height: 1.4rem;
+    width: 1.8rem;
+    height: 1.8rem;
     background-color: #00ff87;
     border: 1px solid #01aa13;
     border-radius: 50%;

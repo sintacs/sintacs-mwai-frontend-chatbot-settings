@@ -5,7 +5,7 @@ This WordPress plugin allows users to change chatbot parameters directly from th
 It allows you to edit existing chatbot settings in the frontend and save settings per user with the option to update the original chatbot settings. It requires having the chatbot previously created.
 
 ## Version
-1.2.1
+1.3.1
 
 ## Author
 Dirk Krölls, Sintacs
@@ -30,6 +30,11 @@ Dirk Krölls, Sintacs
 - Use the 'Save to Original' Button to save the user settings to the original chatbot, so that it will effect every user of this chatbot.
 - Use the 'Reset to Original' Button to load the original chatbot settings into the form. Needs save to take effect for the current user.
 
+### Parameter Behavior
+- If a parameter is not visible in the frontend, it will revert to the default setting.
+- This ensures that users cannot modify parameters that are not intended to be editable.
+- The parameter values will be displayed based on the user settings if available, otherwise, they will fall back to the default settings.
+
 ## Features
 - **Dynamic Parameter Handling**: Adjusts parameters based on defined chatbot settings.
 - **AJAX-based Form Submission**: Ensures a seamless user experience without page reloads.
@@ -45,6 +50,14 @@ Dirk Krölls, Sintacs
 - AI Engine or AI Engine Pro plugin must be active.
 
 ## Changelog
+
+### 1.3.1
+Changes
+- Code optimized
+- Environment name in the form header shows up under any circumstance, even if the parameter is not visible in the frontend
+
+Added 
+- Warning the user if he tries to leave the page with unsaved changes 
 
 ### 1.2.1
 Fix

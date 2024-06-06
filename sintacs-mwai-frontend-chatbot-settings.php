@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sintacs Mwai Frontend Chatbot Settings
  * Description: Allows users to change chatbot parameters on the frontend.
- * Version: 1.2.0
+ * Version: 1.3.1
  * Author: Dirk Krölls, Sintacs
  */
 
@@ -71,9 +71,6 @@ function sintacs_mwai_frontend_chatbot_settings_action_links( $links ) {
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ),'sintacs_mwai_frontend_chatbot_settings_action_links' );
 
 class SintacsMwaiFrontendChatbotSettings {
-	/**
-	 * @var array|string[]
-	 */
 
 	var string $plugin_name = 'Sintacs Mwai Frontend Chatbot Settings';
 
@@ -81,9 +78,6 @@ class SintacsMwaiFrontendChatbotSettings {
 	var array $chatbot_modes = [ 'chat','assistant','images' ];
 
 	var string $chatbot_id = '';
-
-	// Parameter names to save with the form in the frontend
-	var array $chatbot_settings = [];
 
 	// Parameter names to save with the form in the backend
 	var array $parameter_names = [];
@@ -131,7 +125,6 @@ class SintacsMwaiFrontendChatbotSettings {
 
 		add_shortcode( 'ai_engine_extension_form',array( $this,'form_shortcode' ) );
 
-
 		// AI Engine Filter
 		// This filter is used to overwrite the default parameters for the chatbot
 		add_filter( 'mwai_chatbot_params',array( $this,'overwrite_chatbot_params' ),10,1 );
@@ -157,10 +150,6 @@ class SintacsMwaiFrontendChatbotSettings {
 			wp_send_json_success( $chatbot_settings );
 		} );
 
-		if ( $this->is_ai_engine_pro_active() ) {
-			// AI Engine Pro-specific initializations
-		}
-
 		// Generate the parameter_names based on MWAI_CHATBOT_DEFAULT_PARAMS and exclusion of parameter_to_skip
 		// Check first if constant is defined
 		if ( defined( 'MWAI_CHATBOT_DEFAULT_PARAMS' ) ) {
@@ -172,7 +161,6 @@ class SintacsMwaiFrontendChatbotSettings {
 			// Make the array unique
 			$this->parameter_names = array_unique( $this->parameter_names );
 		}
-
 
 		$this->allowed_roles = get_option( 'sintacs_mwai_chatbot_frontend_allowed_roles',[ 'administrator' ] ); // Default to 'administrator' if not set
 	}
@@ -218,54 +206,60 @@ class SintacsMwaiFrontendChatbotSettings {
 	public function save_parameters() {
 		if ( ! $this->current_user_has_access() ) {
 			wp_send_json_error( [ 'message' => 'You are not allowed to change these settings.' ] );
+
 			return;
 		}
 
-		parse_str( nl2br( $_POST['formData'] ), $formDataArray );
+		parse_str( nl2br( $_POST['formData'] ),$formDataArray );
 
-		if ( ! isset( $formDataArray['security'] ) || ! wp_verify_nonce( $formDataArray['security'], 'sichere_handlung' ) ) {
+		if ( ! isset( $formDataArray['security'] ) || ! wp_verify_nonce( $formDataArray['security'],'sichere_handlung' ) ) {
 			wp_send_json_error( [ 'message' => 'Security check failed.' ] );
+
 			return;
 		}
 
 		$extractedParameters = [];
-		$parameters_to_show = get_option( 'sintacs_mwai_chatbot_parameters_to_show', $this->parameter_to_show );
+		$parameters_to_show  = get_option( 'sintacs_mwai_chatbot_parameters_to_show',$this->parameter_to_show );
 
 		foreach ( $parameters_to_show as $parameter_name ) {
 			if ( isset( $formDataArray[ $parameter_name ] ) ) {
-				$value = str_replace( '&nbsp;', ' ', $formDataArray[ $parameter_name ] );
+				$value                                  = str_replace( '&nbsp;',' ',$formDataArray[ $parameter_name ] );
 				$extractedParameters[ $parameter_name ] = stripslashes( $value );
 			}
 		}
 
 		$chatbot_id = sanitize_text_field( $_POST['chatbotId'] );
 		$user_id    = get_current_user_id();
-		update_user_meta( $user_id, 'sintacs_mwai_chatbot_settings_' . $chatbot_id, $extractedParameters );
+		update_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbot_id,$extractedParameters );
 
 		wp_send_json_success( [ 'message' => 'Chatbot settings updated successfully. Reloading the page to take effect.' ] );
 	}
 
 	public function form_shortcode( $atts ) {
 		$atts = shortcode_atts( array(
-			'chatbot_id' => '',
+			'chatbot_id'  => '',
 			'allow_users' => '',
 		),$atts,'ai_engine_extension_form' );
 
-		$chatbot_id = sanitize_text_field( $atts['chatbot_id'] );
+		if ( ! $this->is_ai_engine_pro_active() ) {
+			return 'AI Engine (Pro) is not active.';
+		}
 
 		if ( ! $this->current_user_has_access() ) {
 			return 'You are not allowed to access this feature.';
 		}
 
-		if ( ! empty( $atts['allow_users'] ) ) {
-			$allow_users = preg_split( '/\s*[,;\s]\s*/', sanitize_text_field( $atts['allow_users'] ) );
-			if ( ! is_user_logged_in() || ! in_array( wp_get_current_user()->user_email, $allow_users ) ) {
-				return 'You are not allowed to access this feature.';
-			}
+		if ( ! empty( $atts['chatbot_id'] ) ) {
+			$chatbot_id = sanitize_text_field( $atts['chatbot_id'] );
+		} else {
+			$chatbot_id = '';
 		}
 
-		if ( ! $this->is_ai_engine_pro_active() ) {
-			return 'AI Engine (Pro) is not active.';
+		if ( ! empty( $atts['allow_users'] ) ) {
+			$allow_users = preg_split( '/\s*[,;\s]\s*/',sanitize_text_field( $atts['allow_users'] ) );
+			if ( ! is_user_logged_in() || ! in_array( wp_get_current_user()->user_email,$allow_users ) ) {
+				return 'You are not allowed to access this feature.';
+			}
 		}
 
 		// Enqueue scripts and styles only when the shortcode is processed
@@ -302,8 +296,8 @@ class SintacsMwaiFrontendChatbotSettings {
 			},array_keys( $params_to_overwrite ),$params_to_overwrite );
 
 			// Join the attributes into a string
-			$attributes_string = implode( ' ',$attributes );
-			$ai_engine_chatbot = do_shortcode( '[mwai_chatbot id="' . $chatbot_id . '" ' . $attributes_string . ' ]' );
+			$attributes_string           = implode( ' ',$attributes );
+			$ai_engine_chatbot           = do_shortcode( '[mwai_chatbot id="' . $chatbot_id . '" ' . $attributes_string . ' ]' );
 			$ai_engine_chatbot_shortcode = '<div class="sintacs-ai-engine-shortcode-wrap">' . $ai_engine_chatbot . '</div>';
 		}
 
@@ -329,8 +323,8 @@ class SintacsMwaiFrontendChatbotSettings {
 		$form_footer .= '<button type="button" id="reset-to-default" class="sintacs-btn sintacs-btn-warning sintacs-btn-sm">' . __( 'Reset to Original' ) . '</button>';
 		$form_footer .= '</div>';
 
-		if ( get_option('sintacs_mwai_chatbot_show_footer_info', '1') === '1' ) {
-			$form_footer_info = '<div class="sintacs-card-footer">' . wp_kses_post(get_option('sintacs_mwai_chatbot_footer_info_text', 'Default footer info text.')) . '</div>';
+		if ( get_option( 'sintacs_mwai_chatbot_show_footer_info','1' ) === '1' ) {
+			$form_footer_info = '<div class="sintacs-card-footer">' . wp_kses_post( get_option( 'sintacs_mwai_chatbot_footer_info_text','Default footer info text.' ) ) . '</div>';
 		}
 
 		// Form
@@ -388,7 +382,7 @@ class SintacsMwaiFrontendChatbotSettings {
 					break;
 				case 'instructions':
 				case 'context':
-                case 'startSentence':
+				case 'startSentence':
 					$form_elements .= "<div class='sintacs-form-floating'>";
 					$form_elements .= "<textarea id='{$parameter_name}' name='{$parameter_name}' class='sintacs-form-control sintacs-form-control-sm' placeholder='{$label}'{$readonly}>{$value}</textarea>";
 					$form_elements .= "<label for='{$parameter_name}' id='{$parameter_name}-label'>{$label} <span>{$icon}</span></label></div>";
@@ -409,10 +403,10 @@ class SintacsMwaiFrontendChatbotSettings {
 					$form_elements .= "<div class='sintacs-form-floating'>";
 					$form_elements .= "<select id='envId' name='envId' class='sintacs-form-select sintacs-form-select-sm'{$readonly}>";
 
-						$form_elements .= "<option value='' selected>Default</option>";
+					$form_elements .= "<option value='' selected>Default</option>";
 
-					foreach ($environments as $env) {
-						$selected = $value === $env['id'] ? 'selected' : '';
+					foreach ( $environments as $env ) {
+						$selected      = $value === $env['id'] ? 'selected' : '';
 						$form_elements .= "<option value='{$env['id']}' {$selected}>{$env['name']}</option>";
 					}
 					$form_elements .= "</select>";
@@ -500,27 +494,41 @@ class SintacsMwaiFrontendChatbotSettings {
 
 		$models = $this->get_available_models();
 
+		// Determine the environment ID to use
+		$envId    = isset( $user_settings['envId'] ) ? $user_settings['envId'] : $default_settings['envId'];
+		$env_name = $this->get_environment_name_by_id( $envId );
+
 		wp_send_json_success( [
 			'models'           => $models,
 			'chatbot_settings' => $user_settings,
-			'default_settings' => $default_settings
+			'default_settings' => $default_settings,
+			'env_name'         => $env_name
 		] );
 	}
 
-	private function get_available_models() {
+	private function get_environment_name_by_id( $envId ) {
+		$environments = $this->get_all_mwai_options( 'ai_envs' );
+		foreach ( $environments as $env ) {
+			if ( $env['id'] === $envId ) {
+				return $env['name'];
+			}
+		}
+
+		return 'Default';
+	}
+
+	private function get_available_models(): array {
 		$options = $this->get_wp_option( 'mwai_options' );
 
 		$models = [];
 
 		// Retrieve default environment and model directly from options
-		//$defaultEnvId = isset($options['ai_default_env']) ? $options['ai_default_env'] : null;
 		$defaultModel = isset( $options['ai_default_model'] ) ? $options['ai_default_model'] : MWAI_FALLBACK_MODEL;
 
 		$models[] = [
 			'model' => '',
 			'name'  => 'Default (' . $defaultModel . ')'
 		];
-
 
 		if ( isset( $options['openai_models'] ) ) {
 			$models = array_merge( $models,$options['openai_models'] );
@@ -556,7 +564,6 @@ class SintacsMwaiFrontendChatbotSettings {
 				}
 			}
 		}
-
 	}
 
 	public function setChatbotId( string $chatbot_id ): void {
@@ -678,11 +685,8 @@ class SintacsMwaiFrontendChatbotSettings {
 		global $mwai_core;
 
 		//$theme_option_name = get_theme_option_name( $mwai_core );
-		$themes = $mwai_core->get_themes();
-
-		return $themes;
+		return $mwai_core->get_themes();
 	}
-
 }
 
 new SintacsMwaiFrontendChatbotSettings();

@@ -2,7 +2,7 @@
 
 class SintacsMwaiFrontendChatbotSettingsAdmin {
 
-    var string $default_footer_info_text = '<ul>
+    var $default_footer_info_text = '<ul>
  	<li>The blue dot icon <img draggable="false" role="img" class="emoji" alt="🔵" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f535.svg"> indicates that the value of the field differs from the original value.</li>
  	<li>The "Save" button saves the settings to the user meta fields and overwrites the original values while chatting with this bot.</li>
  	<li>The "Save to Original" button saves the settings to the original values.</li>
@@ -32,74 +32,87 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 		}
 		$chatbots         = $this->get_all_chatbots(); // Fetch chatbots
 		$defaultChatbotId = ! empty( $chatbots ) ? esc_attr( $chatbots[0]['botId'] ) : ''; // Get the first chatbot ID
+		$users = get_users(); // Fetch all registered users
 		?>
-        <div class="wrap">
-            <h1><?= esc_html( get_admin_page_title() ); ?></h1>
-            <div id="poststuff">
-                <div id="post-body" class="metabox-holder columns-2">
-                    <!-- main content -->
-                    <div id="post-body-content">
-                        <div class="meta-box-sortables ui-sortable">
-                            <div class="postbox">
-                                <h2 class="hndle"><span><?php _e( 'Settings','textdomain' ); ?></span></h2>
-                                <div class="inside">
-                                    <form action="options.php" method="post">
+		<div class="wrap">
+			<h1><?= esc_html( get_admin_page_title() ); ?></h1>
+			<div id="poststuff">
+				<div id="post-body" class="metabox-holder columns-2">
+					<!-- main content -->
+					<div id="post-body-content">
+						<div class="meta-box-sortables ui-sortable">
+							<div class="postbox">
+								<h2 class="hndle"><span><?php _e( 'Settings','textdomain' ); ?></span></h2>
+								<div class="inside">
+									<form action="options.php" method="post">
 										<?php
 										settings_fields( 'ai_engine_frontend' );
 										do_settings_sections( 'ai_engine_frontend' );
 										submit_button( 'Save Settings' );
 										?>
-                                        <input type="hidden" id="parameters-order"
-                                               name="sintacs_mwai_chatbot_parameters_order"
-                                               value="<?php echo esc_attr( implode( ',',get_option( 'sintacs_mwai_chatbot_parameters_to_show',[] ) ) ); ?>">
-                                    </form>
-                                    <h2><?php _e( 'Shortcode','textdomain' ); ?></h2>
-                                    <p><?php _e( 'Use the following shortcode to insert the chatbot form into a post or page:','textdomain' ); ?></p>
-                                    <select id="chatbot-select">
-										<?php foreach ( $chatbots as $chatbot ): ?>
-                                            <option value="<?= esc_attr( $chatbot['botId'] ); ?>"><?= esc_html( $chatbot['name'] ); ?></option>
-										<?php endforeach; ?>
-                                    </select>
-                                    <input type="text" id="chatbot-shortcode"
-                                           value="[ai_engine_extension_form chatbot_id=&quot;<?= $defaultChatbotId; ?>&quot;]"
-                                           readonly style="width: 100%; max-width: 600px;">
-                                    <button id="copy-shortcode-button"
-                                            class="button"><?php _e( 'Copy Shortcode','textdomain' ); ?></button>
-                                    <p><?php _e( 'If you do not specify a chatbot ID, it will default to the first chatbot on the current post / page.','textdomain' ); ?></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- sidebar -->
-                    <div id="postbox-container-1" class="postbox-container">
-                        <div class="meta-box-sortables">
-                            <div class="postbox">
-                                <h2 class="hndle"><span><?php _e( 'FAQ','textdomain' ); ?></span></h2>
-                                <div class="inside">
-                                    <div class="faq-item">
-                                        <h3><?php _e( 'How do I add a chatbot to a page?','textdomain' ); ?></h3>
-                                        <p><?php _e( 'Use the shortcode provided above to insert the chatbot form into any post or page.','textdomain' ); ?></p>
-                                    </div>
-                                    <div class="faq-item">
-                                        <h3><?php _e( 'How do I manage chatbot settings?','textdomain' ); ?></h3>
-                                        <p><?php _e( 'You can manage chatbot settings from this admin page. Make sure to save your changes.','textdomain' ); ?></p>
-                                    </div>
-                                    <div class="faq-item">
-                                        <h3><?php _e( 'What happens if I uninstall the plugin?','textdomain' ); ?></h3>
-                                        <p><?php _e( 'If you select the option to delete settings on uninstall, all settings will be removed when the plugin is deleted.','textdomain' ); ?></p>
-                                    </div>
-                                    <div class="faq-item">
-                                        <h3><?php _e( 'How do I sort the parameters?','textdomain' ); ?></h3>
-                                        <p><?php _e( 'You can sort the parameters by dragging and dropping them in the desired order in the "Parameters to Show" section. Remember to save your changes after sorting.','textdomain' ); ?></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <br class="clear">
-            </div>
-        </div>
+										<input type="hidden" id="parameters-order"
+											   name="sintacs_mwai_chatbot_parameters_order"
+											   value="<?php echo esc_attr( implode( ',',get_option( 'sintacs_mwai_chatbot_parameters_to_show',[] ) ) ); ?>">
+									</form>
+									<h2><?php _e( 'Shortcode','textdomain' ); ?></h2>
+									<p><?php _e( 'Use the following shortcode to insert the chatbot form into a post or page:','textdomain' ); ?></p>
+									<div class="shortcode-builder">
+										<label for="chatbot-select"><?php _e( 'Select Chatbot','textdomain' ); ?></label>
+										<select id="chatbot-select">
+											<?php foreach ( $chatbots as $chatbot ): ?>
+												<option value="<?= esc_attr( $chatbot['botId'] ); ?>"><?= esc_html( $chatbot['name'] ); ?></option>
+											<?php endforeach; ?>
+										</select>
+										<label for="user-select"><?php _e( 'Select Users','textdomain' ); ?></label>
+										<select id="user-select" multiple>
+											<?php foreach ( $users as $user ): ?>
+												<option value="<?= esc_attr( $user->user_email ); ?>"><?= esc_html( $user->user_email ); ?></option>
+											<?php endforeach; ?>
+										</select>
+										<label for="chatbot-shortcode"><?php _e( 'Generated Shortcode','textdomain' ); ?></label>
+										<input type="text" id="chatbot-shortcode"
+											   value="[ai_engine_extension_form chatbot_id=&quot;<?= $defaultChatbotId; ?>&quot;]"
+											   readonly style="width: 100%; max-width: 600px;">
+										<div class="shortcode-button-group">
+											<button id="copy-shortcode-button" class="button"><?php _e( 'Copy Shortcode','textdomain' ); ?></button>
+											<button id="reset-shortcode-button" class="button"><?php _e( 'Reset','textdomain' ); ?></button>
+										</div>
+									</div>
+									<p><?php _e( 'If you do not specify a chatbot ID, it will default to the first chatbot on the current post / page.','textdomain' ); ?></p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- sidebar -->
+					<div id="postbox-container-1" class="postbox-container">
+						<div class="meta-box-sortables">
+							<div class="postbox">
+								<h2 class="hndle"><span><?php _e( 'FAQ','textdomain' ); ?></span></h2>
+								<div class="inside">
+									<div class="faq-item">
+										<h3><?php _e( 'How do I add a chatbot to a page?','textdomain' ); ?></h3>
+										<p><?php _e( 'Use the shortcode provided above to insert the chatbot form into any post or page.','textdomain' ); ?></p>
+									</div>
+									<div class="faq-item">
+										<h3><?php _e( 'How do I manage chatbot settings?','textdomain' ); ?></h3>
+										<p><?php _e( 'You can manage chatbot settings from this admin page. Make sure to save your changes.','textdomain' ); ?></p>
+									</div>
+									<div class="faq-item">
+										<h3><?php _e( 'What happens if I uninstall the plugin?','textdomain' ); ?></h3>
+										<p><?php _e( 'If you select the option to delete settings on uninstall, all settings will be removed when the plugin is deleted.','textdomain' ); ?></p>
+									</div>
+									<div class="faq-item">
+										<h3><?php _e( 'How do I sort the parameters?','textdomain' ); ?></h3>
+										<p><?php _e( 'You can sort the parameters by dragging and dropping them in the desired order in the "Parameters to Show" section. Remember to save your changes after sorting.','textdomain' ); ?></p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<br class="clear">
+			</div>
+		</div>
 		<?php
 	}
 
@@ -288,7 +301,7 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 	}
 
 	public function footer_info_text_field_render() {
-		$option = get_option( 'sintacs_mwai_chatbot_footer_info_text',$this->default_footer_info_text );
+		$option = get_option( 'sintacs_mwai_chatbot_footer_info_text','Default footer info text.' );
 		wp_editor( $option,'sintacs_mwai_chatbot_footer_info_text',array(
 			'textarea_name' => 'sintacs_mwai_chatbot_footer_info_text',
 			'textarea_rows' => 10,
@@ -300,4 +313,5 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 }
 
 new SintacsMwaiFrontendChatbotSettingsAdmin();
+
 

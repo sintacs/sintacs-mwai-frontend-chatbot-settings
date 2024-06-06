@@ -58,3 +58,30 @@
     height: 1.5em;
     line-height: 1.2em;
 }
+
+.shortcode-builder {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.shortcode-builder label {
+    font-weight: bold;
+}
+
+.shortcode-builder select,
+.shortcode-builder input {
+    width: 100%;
+    max-width: 600px;
+}
+
+.shortcode-builder button {
+    width: 100%;
+    max-width: 600px;
+}
+
+.shortcode-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}

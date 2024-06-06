@@ -325,7 +325,7 @@ class SintacsMwaiFrontendChatbotSettings {
 		$form_footer .= '</div>';
 
 		if ( get_option( 'sintacs_mwai_chatbot_show_footer_info','1' ) === '1' ) {
-			$form_footer_info = '<div class="sintacs-card-footer">' . wp_kses_post( get_option( 'sintacs_mwai_chatbot_footer_info_text','Default footer info text.' ) ) . '</div>';
+			$form_footer_info = '<div class="sintacs-card-footer">' . wp_kses_post( get_option( 'sintacs_mwai_chatbot_footer_info_text','Default footer info text.1' ) ) . '</div>';
 		}
 
 		// Form

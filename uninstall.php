@@ -11,6 +11,9 @@ if ($delete_settings === '1') {
     delete_option('sintacs_mwai_chatbot_frontend_allowed_roles');
     delete_option('sintacs_mwai_chatbot_parameters_to_show');
     delete_option('sintacs_mwai_chatbot_delete_settings_on_uninstall');
+    delete_option('sintacs_mwai_chatbot_show_save_to_original');
+    delete_option('sintacs_mwai_chatbot_show_footer_info');
+    delete_option('sintacs_mwai_chatbot_footer_info_text');
 
     // Delete all user chatbot settings
     $users = get_users();

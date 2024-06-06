@@ -2,7 +2,7 @@
 
 class SintacsMwaiFrontendChatbotSettingsAdmin {
 
-    var string $default_footer_info_text = '<ul>
+    var $default_footer_info_text = '<ul>
  	<li>The blue dot icon <img draggable="false" role="img" class="emoji" alt="🔵" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f535.svg"> indicates that the value of the field differs from the original value.</li>
  	<li>The "Save" button saves the settings to the user meta fields and overwrites the original values while chatting with this bot.</li>
  	<li>The "Save to Original" button saves the settings to the original values.</li>
@@ -301,7 +301,7 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 	}
 
 	public function footer_info_text_field_render() {
-		$option = get_option( 'sintacs_mwai_chatbot_footer_info_text',$this->default_footer_info_text );
+		$option = get_option( 'sintacs_mwai_chatbot_footer_info_text','Default footer info text.' );
 		wp_editor( $option,'sintacs_mwai_chatbot_footer_info_text',array(
 			'textarea_name' => 'sintacs_mwai_chatbot_footer_info_text',
 			'textarea_rows' => 10,

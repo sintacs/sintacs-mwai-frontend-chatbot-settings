@@ -1,18 +1,30 @@
 jQuery(document).ready(function($) {
     // Set the default value on page load
     var defaultChatbotId = $('#chatbot-select').val();
-    $('#chatbot-shortcode').val('[ai_engine_extension_form chatbot_id="' + defaultChatbotId + '"]');
+    var defaultUsers = $('#user-select').val();
+    updateShortcode();
 
     $('#chatbot-select').change(function () {
-        var chatbotId = $(this).val();
-        $('#chatbot-shortcode').val('[ai_engine_extension_form chatbot_id="' + chatbotId + '"]');
+        updateShortcode();
     });
+
+    $('#user-select').change(function () {
+        updateShortcode();
+    });
+
     $('#copy-shortcode-button').click(function (e) {
         e.preventDefault();
         var $shortcodeInput = $('#chatbot-shortcode');
         $shortcodeInput.select();
         document.execCommand('copy');
         alert('Shortcode copied to clipboard!');
+    });
+
+    $('#reset-shortcode-button').click(function (e) {
+        e.preventDefault();
+        $('#chatbot-select').val(defaultChatbotId);
+        $('#user-select').val(defaultUsers);
+        updateShortcode();
     });
 
     $("#sortable-parameters").sortable({
@@ -46,6 +58,17 @@ jQuery(document).ready(function($) {
             }
         });
         $('#parameters-order').val(order.join(','));
+    }
+
+    function updateShortcode() {
+        var chatbotId = $('#chatbot-select').val();
+        var userSelect = $('#user-select');
+        var selectedUsers = [];
+        userSelect.find('option:selected').each(function() {
+            selectedUsers.push($(this).val());
+        });
+        var allowUsers = selectedUsers.join(',');
+        $('#chatbot-shortcode').val('[ai_engine_extension_form chatbot_id="' + chatbotId + '" allow_users="' + allowUsers + '"]');
     }
 
     // Initial update

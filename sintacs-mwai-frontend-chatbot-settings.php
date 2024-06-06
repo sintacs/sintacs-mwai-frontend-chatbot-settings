@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sintacs Mwai Frontend Chatbot Settings
  * Description: Allows users to change chatbot parameters on the frontend.
- * Version: 1.3.1
+ * Version: 1.3.2
  * Author: Dirk Krölls, Sintacs
  */
 

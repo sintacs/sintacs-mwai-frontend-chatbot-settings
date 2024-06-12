@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sintacs Mwai Frontend Chatbot Settings
  * Description: Allows users to change chatbot parameters on the frontend.
- * Version: 1.3.3
+ * Version: 1.3.4
  * Author: Dirk Krölls, Sintacs
  */
 
@@ -62,7 +62,7 @@ register_uninstall_hook( __FILE__,'sintacs_mwai_frontend_chatbot_settings_uninst
 
 // Add settings link on plugin page
 function sintacs_mwai_frontend_chatbot_settings_action_links( $links ) {
-	$settings_link = '<a href="admin.php?page=chats_frontend_settings">' . __( 'Settings' ) . '</a>';
+	$settings_link = '<a href="admin.php?page=sintacs-ai-engine-settings">' . __( 'Settings' ) . '</a>';
 	array_unshift( $links,$settings_link );
 
 	return $links;

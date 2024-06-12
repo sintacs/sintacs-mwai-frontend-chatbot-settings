@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sintacs Mwai Frontend Chatbot Settings
  * Description: Allows users to change chatbot parameters on the frontend.
- * Version: 1.3.2
+ * Version: 1.3.3
  * Author: Dirk Krölls, Sintacs
  */
 
@@ -163,7 +163,23 @@ class SintacsMwaiFrontendChatbotSettings {
 		}
 
 		$this->allowed_roles = get_option( 'sintacs_mwai_chatbot_frontend_allowed_roles',[ 'administrator' ] ); // Default to 'administrator' if not set
+
+        // Register the add-on with AI Engine Pro
+        add_filter('mwai_addons', array($this, 'register_addon'), 10, 1);
 	}
+
+    public function register_addon($addons) {
+        $addons[] = [
+            'slug' => "sintacs-mwai-frontend",
+            'name' => "Sintacs Mwai Frontend Chatbot Settings",
+            'icon_url' => 'https://sintacs.de/favicon.png',
+            'description' => "Allows users to change chatbot parameters on the frontend.",
+            'install_url' => "https://github.com/sintacs/sintacs-mwai-frontend-chatbot-settings",
+            'settings_url' => admin_url('admin.php?page=sintacs-ai-engine-settings'),
+            'enabled' => true
+        ];
+        return $addons;
+    }
 
 	public function check_ai_engine_plugin_status() {
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );

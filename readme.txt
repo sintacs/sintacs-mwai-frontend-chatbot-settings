@@ -51,6 +51,10 @@ Dirk Krölls, Sintacs
 
 ## Changelog
 
+### 1.3.3
+Change
+- The plugin is now recognized as an Add-on for the AI Engine.
+
 ### 1.3.2
 Added
 - Added a multiselect with emails from all registered users to the shortcode builder for the new attribute "allow_users".

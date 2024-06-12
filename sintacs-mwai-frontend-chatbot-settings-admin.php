@@ -21,7 +21,7 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 			'AI Engine Frontend Chatbot Settings',
 			'AI Engine Frontend Chatbot Settings',
 			'manage_options',
-			'chats_frontend_settings',
+			'sintacs-ai-engine-settings',
 			[ $this,'settings_page_html' ] // function
 		);
 	}
@@ -284,9 +284,11 @@ class SintacsMwaiFrontendChatbotSettingsAdmin {
 	}
 
 	public function enqueue_admin_scripts( $hook ) {
-		if ( $hook !== 'meow-apps_page_chats_frontend_settings' ) {
+		if ( $hook !== 'meow-apps_page_sintacs-ai-engine-settings' ) {
 			return;
 		}
+
+        error_log('hook: ' . $hook);
 		wp_enqueue_script( 'sintacs-admin-js',plugin_dir_url( __FILE__ ) . 'assets/js/admin.js',array( 'jquery' ),null,true );
 		wp_enqueue_style( 'sintacs-admin-css',plugin_dir_url( __FILE__ ) . 'assets/css/admin.css' );
 	}

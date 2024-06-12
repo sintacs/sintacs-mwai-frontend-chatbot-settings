@@ -20,6 +20,7 @@ const SINTACS_MWAI_CHATBOT_PARAMETER_TO_SKIP = [
 	'botId'
 ];
 
+
 include_once( 'sintacs-mwai-frontend-chatbot-settings-admin.php' );
 
 // Define the activation function

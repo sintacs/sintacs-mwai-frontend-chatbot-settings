@@ -5,7 +5,7 @@ This WordPress plugin allows users to change chatbot parameters directly from th
 It allows you to edit existing chatbot settings in the frontend and save settings per user with the option to update the original chatbot settings. It requires having the chatbot previously created.
 
 ## Version
-1.3.4
+1.3.5
 
 ## Author
 Dirk Krölls, Sintacs
@@ -50,6 +50,15 @@ Dirk Krölls, Sintacs
 - AI Engine or AI Engine Pro plugin must be active.
 
 ## Changelog
+
+### 1.3.5
+
+Fix
+- Only the models from the chosen environment are loaded
+- No more limitation to openai and anthropic models
+
+Change
+- If the environment changes (select field), the models are loaded asynchron and the default model is set
 
 ### 1.3.4
 Fix

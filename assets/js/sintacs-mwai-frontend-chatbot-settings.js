@@ -343,6 +343,36 @@ jQuery(document).ready(function ($) {
 
     window.addEventListener('beforeunload', beforeUnloadHandler);
 
+    // Save envId when it changes
+    $('#envId').change(function () {
+        var newEnvId = $(this).val();
+        var formData = $('#sintacs-ai-engine-extension-form').serialize();
+
+        // Disable the submit button and lock the form fields
+        toggleFormElements(true);
+
+        $.ajax({
+            type: "POST",
+            url: aiEngineExtensionAjax.ajaxurl,
+            data: {
+                action: 'save_ai_engine_parameters',
+                chatbotId: chatbotId,
+                formData: formData
+            },
+            success: function (response) {
+                if (response.success) {
+                    // Reload models after saving the new environment ID
+                    updateModelsDropdown();
+                } else {
+                    alert('Failed to save environment settings.');
+                }
+
+                // Disable the submit button and lock the form fields
+                toggleFormElements(false);
+            }
+        });
+    });
+
     waitForChatbot();
     displayTemperatureValue();
 });

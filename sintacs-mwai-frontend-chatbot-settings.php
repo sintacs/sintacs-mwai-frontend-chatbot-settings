@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sintacs Mwai Frontend Chatbot Settings
  * Description: Allows users to change chatbot parameters on the frontend.
- * Version: 1.3.4
+ * Version: 1.3.5
  * Author: Dirk Krölls, Sintacs
  */
 
@@ -136,6 +136,8 @@ class SintacsMwaiFrontendChatbotSettings {
 
 		add_action( 'wp_ajax_save_ai_engine_parameters',array( $this,'save_parameters' ) );
 		add_action( 'wp_ajax_nopriv_save_ai_engine_parameters',array( $this,'save_parameters' ) );
+		add_action( 'wp_ajax_save_user_settings',array( $this,'save_user_settings' ) );
+
 
 		add_action( 'wp_ajax_save_to_original',array( $this,'save_to_original' ) );
 		add_action( 'wp_ajax_get_default_settings',function () {
@@ -165,27 +167,28 @@ class SintacsMwaiFrontendChatbotSettings {
 
 		$this->allowed_roles = get_option( 'sintacs_mwai_chatbot_frontend_allowed_roles',[ 'administrator' ] ); // Default to 'administrator' if not set
 
-        // Register the add-on with AI Engine Pro
-        add_filter('mwai_addons', array($this, 'register_addon'), 10, 1);
+		// Register the add-on with AI Engine Pro
+		add_filter( 'mwai_addons',array( $this,'register_addon' ),10,1 );
 	}
 
-    public function register_addon($addons) {
-        $addons[] = [
-            'slug' => "sintacs-mwai-frontend",
-            'name' => "Sintacs Mwai Frontend Chatbot Settings",
-            'icon_url' => 'https://sintacs.de/favicon.png',
-            'description' => "Allows users to change chatbot parameters on the frontend.",
-            'install_url' => "https://github.com/sintacs/sintacs-mwai-frontend-chatbot-settings",
-            'settings_url' => admin_url('admin.php?page=sintacs-ai-engine-settings'),
-            'enabled' => true
-        ];
-        return $addons;
-    }
+	public function register_addon( $addons ) {
+		$addons[] = [
+			'slug'         => "sintacs-mwai-frontend",
+			'name'         => "Sintacs Mwai Frontend Chatbot Settings",
+			'icon_url'     => 'https://sintacs.de/favicon.png',
+			'description'  => "Allows users to change chatbot parameters on the frontend.",
+			'install_url'  => "https://github.com/sintacs/sintacs-mwai-frontend-chatbot-settings",
+			'settings_url' => admin_url( 'admin.php?page=sintacs-ai-engine-settings' ),
+			'enabled'      => true
+		];
+
+		return $addons;
+	}
 
 	public function check_ai_engine_plugin_status() {
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 		if ( ! is_plugin_active( 'ai-engine/ai-engine.php' ) && ! is_plugin_active( 'ai-engine-pro/ai-engine-pro.php' ) ) {
-			add_action( 'admin_notices', array( $this, 'ai_engine_dependency_notice' ) );
+			add_action( 'admin_notices',array( $this,'ai_engine_dependency_notice' ) );
 			deactivate_plugins( plugin_basename( __FILE__ ) );
 		}
 	}
@@ -251,6 +254,23 @@ class SintacsMwaiFrontendChatbotSettings {
 		update_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbot_id,$extractedParameters );
 
 		wp_send_json_success( [ 'message' => 'Chatbot settings updated successfully. Reloading the page to take effect.' ] );
+	}
+
+	public function save_user_settings() {
+		$chatbotId = $_POST['chatbotId'];
+		$envId     = $_POST['envId'];
+		$user_id   = get_current_user_id();
+
+		// Load existing user settings
+		$user_settings = get_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbotId,true );
+
+		// Update the envId
+		$user_settings['envId'] = $envId;
+
+		// Save the updated settings
+		update_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $chatbotId,$user_settings );
+
+		wp_send_json_success();
 	}
 
 	public function form_shortcode( $atts ) {
@@ -342,7 +362,12 @@ class SintacsMwaiFrontendChatbotSettings {
 		$form_footer .= '</div>';
 
 		if ( get_option( 'sintacs_mwai_chatbot_show_footer_info','1' ) === '1' ) {
-			$form_footer_info = '<div class="sintacs-card-footer">' . wp_kses_post( get_option( 'sintacs_mwai_chatbot_footer_info_text','Default footer info text.1' ) ) . '</div>';
+			$form_footer_info = '<div class="sintacs-card-footer">' . wp_kses_post( get_option( 'sintacs_mwai_chatbot_footer_info_text','<ul>
+ 	<li>The blue dot icon <img draggable="false" role="img" class="emoji" alt="🔵" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f535.svg"> indicates that the value of the field differs from the original value.</li>
+ 	<li>The "Save" button saves the settings to the user meta fields and overwrites the original values while chatting with this bot.</li>
+ 	<li>The "Save to Original" button saves the settings to the original values.</li>
+ 	<li>The "Reset to Original" button resets the field values to the original values.</li>
+</ul>' ) ) . '</div>';
 		}
 
 		// Form
@@ -537,51 +562,90 @@ class SintacsMwaiFrontendChatbotSettings {
 
 	private function get_available_models(): array {
 		$options = $this->get_wp_option( 'mwai_options' );
-
-		$models = [];
-
-		// Retrieve default environment and model directly from options
-		$defaultModel = isset( $options['ai_default_model'] ) ? $options['ai_default_model'] : MWAI_FALLBACK_MODEL;
+		$models  = [];
 
 		$models[] = [
 			'model' => '',
-			'name'  => 'Default (' . $defaultModel . ')'
+			'name'  => 'Default'
 		];
 
-		if ( isset( $options['openai_models'] ) ) {
-			$models = array_merge( $models,$options['openai_models'] );
-		}
-		if ( isset( $options['anthropic_models'] ) ) {
-			$models = array_merge( $models,$options['anthropic_models'] );
+		// Retrieve the default environment ID from mwai_options
+		$default_envId = isset( $options['ai_default_env'] ) ? $options['ai_default_env'] : 'mpjogv7g'; // Assuming 'mpjogv7g' is the ID for 'openai'
+
+		// Retrieve the environment ID for the current chatbot
+		$envId = $this->get_environment_id_by_chatbot_id( $this->chatbot_id );
+
+		// Get current user ID
+		$user_id = get_current_user_id();
+
+		// Load user-specific settings if they exist
+		$user_settings = get_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $this->chatbot_id,true );
+
+		// Check if user has set an envId
+		if ( ! empty( $user_settings['envId'] ) ) {
+			$envId = $user_settings['envId'];
+		} else {
+			// If no envId is set, use the default environment ID
+			$envId = $default_envId;
 		}
 
-		$finetunes = $this->get_finetunes_by_chatbotId( $this->chatbot_id );
-
-		if ( ! empty( $finetunes ) ) {
-			$finetunes_prepared = [];
-			foreach ( $finetunes as $finetune ) {
-				$finetune_name        = ( isset( $finetune['suffix'] ) ) ? $finetune['suffix'] : $finetune['id'];
-				$finetunes_prepared[] = array( 'model' => $finetune['model'],'name' => $finetune_name );
+		// Find the environment based on the envId
+		$environments = $this->get_all_mwai_options( 'ai_envs' );
+		$current_env  = null;
+		foreach ( $environments as $env ) {
+			if ( $env['id'] === $envId ) {
+				$current_env = $env;
+				break;
 			}
+		}
 
-			$models = array_merge( $models,$finetunes_prepared );
+		if ( ! $current_env ) {
+			return $models; // Return empty if no matching environment is found
+		}
+
+		// Get the type of the current environment
+		$env_type = $current_env['type'];
+
+		// Retrieve models based on the environment type
+		$type_models_key = $env_type . '_models';
+		if ( ! empty( $options[ $type_models_key ] ) ) {
+			$models = array_merge( $models,$options[ $type_models_key ] );
+		}
+
+		// Check if the user's model is part of the current environment's models
+		if ( ! empty( $user_settings['model'] ) ) {
+			$user_model_valid = false;
+			foreach ( $models as $model ) {
+				if ( $model['model'] === $user_settings['model'] ) {
+					$user_model_valid = true;
+					break;
+				}
+			}
+			if ( ! $user_model_valid ) {
+				$user_settings['model'] = $models[0]['model'];
+				update_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $this->chatbot_id,$user_settings );
+			}
+		} else {
+			// Set the first model of the environment if no model is set by the user
+			if ( ! empty( $models ) ) {
+				$user_settings['model'] = $models[0]['model'];
+				update_user_meta( $user_id,'sintacs_mwai_chatbot_settings_' . $this->chatbot_id,$user_settings );
+			}
+		}
+
+
+		// Add finetunes if available
+		if ( ! empty( $current_env['finetunes'] ) ) {
+			foreach ( $current_env['finetunes'] as $finetune ) {
+				$finetune_name = isset( $finetune['suffix'] ) ? $finetune['suffix'] : $finetune['id'];
+				$models[]      = [
+					'model' => $finetune['model'],
+					'name'  => $finetune_name
+				];
+			}
 		}
 
 		return $models;
-	}
-
-	private function get_finetunes_by_chatbotId( $chatbot_id ) {
-		$envId = $this->get_environment_id_by_chatbot_id( $chatbot_id );
-
-		$options = $this->get_wp_option( 'mwai_options' );
-
-		if ( ! empty( $options['ai_envs'] ) ) {
-			foreach ( $options['ai_envs'] as $env ) {
-				if ( $env['id'] === $envId && isset( $env['finetunes'] ) ) {
-					return $env['finetunes'];
-				}
-			}
-		}
 	}
 
 	public function setChatbotId( string $chatbot_id ): void {
@@ -604,17 +668,20 @@ class SintacsMwaiFrontendChatbotSettings {
 	}
 
 	private function get_environment_id_by_chatbot_id( $chatbotId ) {
-		// Retrieve chatbots from WP options under the key 'mwai_chatbots'
+		// Retrieve chatbots from WP options under the key 'wai_chatbots'
 		$chatbots = $this->get_wp_option( 'mwai_chatbots' );
+
 		foreach ( $chatbots as $chatbot ) {
 			if ( isset( $chatbot['botId'] ) && $chatbot['botId'] === $chatbotId ) {
 				// Return the environment ID if the chatbot was found
-				return $chatbot['envId'] ?? null;
+				$envId = $chatbot['envId'] ?? null;
+
+				return empty( $envId ) ? 'default' : $envId;
 			}
 		}
 
-		// Return null if no match was found
-		return null;
+		// Return 'default' if no match is found
+		return 'default';
 	}
 
 	private function get_wp_option( $option_name ) {

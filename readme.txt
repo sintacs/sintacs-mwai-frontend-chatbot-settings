@@ -1,3 +1,9 @@
+
+**Find the latest release on my store page: https://store.sintacs.de**
+**No more update here on github.**
+
+----------------------------------------------
+
 # Sintacs Mwai Frontend Chatbot Settings
 
 ## Description

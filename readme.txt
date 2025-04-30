@@ -1,6 +1,6 @@
 
 # Find the latest release on my store page: https://store.sintacs.de
-## No more update here on github.**
+## No more updates here on github.
 
 ----------------------------------------------
 
